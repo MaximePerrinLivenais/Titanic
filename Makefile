@@ -6,6 +6,7 @@ TARGET = titanic
 
 RPC = \
         src/rpc/rpc.cc \
+        src/rpc/request-vote.cc \
         $(NULL)
 
 SRC = \
