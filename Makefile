@@ -5,8 +5,9 @@ CPPFLAGS = -Isrc
 TARGET = titanic
 
 RPC = \
-        src/rpc/rpc.cc \
+        src/rpc/append-entries.cc \
         src/rpc/request-vote.cc \
+        src/rpc/rpc.cc \
         $(NULL)
 
 SRC = \
