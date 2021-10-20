@@ -18,11 +18,12 @@ public:
 
     unsigned int get_term();
 
-    void convert_to_follower();
-
 private:
     void handle_election_timeout();
+    void set_election_timeout();
     void apply_queries(std::vector<rpc::RemoteProcedureCall> &queries);
+
+    void convert_to_follower();
 
     ServerStatus current_status;
     unsigned int election_timeout;

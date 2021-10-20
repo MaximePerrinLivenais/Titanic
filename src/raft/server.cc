@@ -31,12 +31,17 @@ void Server::count_vote(const bool vote_granted)
     vote_count += vote_granted;
 }
 
-void Server::handle_election_timeout()
+void Server::set_election_timeout()
 {
     srand(time(0));
 
     auto range = MAX_TIMEOUT_MILLI - MIN_TIMEOUT_MILLI;
     election_timeout = std::rand() % (range) + MIN_TIMEOUT_MILLI;
+}
+
+void Server::handle_election_timeout()
+{
+    set_election_timeout();
 
     current_term += 1;
     current_status = ServerStatus::CANDIDATE;
