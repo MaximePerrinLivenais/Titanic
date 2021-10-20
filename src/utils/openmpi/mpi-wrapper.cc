@@ -32,8 +32,6 @@ namespace mpi
         MPI_Status status;
         MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm, &flag, &status);
 
-        std::cout << flag << '\n';
-
         auto source = status.MPI_SOURCE;
         auto tag = status.MPI_TAG;
 
@@ -61,8 +59,10 @@ namespace mpi
         for (int i = 1; i < size; i++)
         {
             if (i != rank)
+            {
                 MPI_Send(message.c_str(), message.length(), MPI_CHAR,
                             i, tag, comm);
+            }
         }
     }
 }
