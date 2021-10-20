@@ -41,6 +41,14 @@ void Server::set_election_timeout()
     election_timeout = std::rand() % (range) + MIN_TIMEOUT_MILLI;
 }
 
+bool Server::check_majority()
+{
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    return vote_count >= (unsigned int)(rank / 2);
+}
+
 void Server::handle_election_timeout()
 {
     set_election_timeout();
@@ -89,6 +97,11 @@ void Server::handle_election_timeout()
 
     // XXX: if vote_count has the majority of node
     //     - convert to leader
+    if (check_majority())
+    {
+        convert_to_leader();
+        return;
+    }
 
     // check if election_timeout is over
     //     - handle_election_timeout once again
@@ -110,4 +123,9 @@ void Server::convert_to_follower()
     voted_for = 0;
 
     // XXX: Reset timeout
+}
+
+void Server::convert_to_leader()
+{
+    // TODO
 }

@@ -24,6 +24,8 @@ private:
     void apply_queries(std::vector<rpc::RemoteProcedureCall> &queries);
 
     void convert_to_follower();
+    void convert_to_leader();
+    bool check_majority();
 
     ServerStatus current_status;
     unsigned int election_timeout;
