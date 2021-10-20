@@ -4,7 +4,7 @@
 #include <ctime>
 #include <vector>
 
-#include "exception/convert_to_follower.hh"
+#include "exception/follower_exception.hh"
 #include "utils/chrono/chrono.hh"
 
 constexpr unsigned int MIN_TIMEOUT_MILLI = 150;
@@ -43,9 +43,13 @@ void Server::handle_election_timeout()
 {
     set_election_timeout();
 
+    auto begin = chrono::get_time_milliseconds();
+
     current_term += 1;
     current_status = ServerStatus::CANDIDATE;
-    vote_count = 0;
+
+    // It votes for itself
+    vote_count = 1;
 
     // XXX: Broadcast for requesting vote RPC
 
@@ -64,16 +68,19 @@ void Server::handle_election_timeout()
     {
         apply_queries(queries);
     }
-    catch (const ConvertToFollower &)
+    catch (const FollowerException &)
     {
         convert_to_follower();
         return;
     }
 
-    // check if vote_count has the majority of node
+    // XXX: if vote_count has the majority of node
     //     - convert to leader
+
     // check if election_timeout is over
     //     - handle_election_timeout once again
+    if (chrono::get_time_milliseconds() - begin >= election_timeout)
+        handle_election_timeout();
 }
 
 void Server::apply_queries(std::vector<rpc::RemoteProcedureCall> &queries)
@@ -86,5 +93,8 @@ void Server::apply_queries(std::vector<rpc::RemoteProcedureCall> &queries)
 
 void Server::convert_to_follower()
 {
-    // TODO
+    current_status = ServerStatus::FOLLOWER;
+    voted_for = 0;
+
+    // XXX: Reset timeout
 }

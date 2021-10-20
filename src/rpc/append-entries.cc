@@ -1,6 +1,6 @@
 #include "rpc/append-entries.hh"
 
-#include "exception/convert_to_follower.hh"
+#include "exception/follower_exception.hh"
 #include "raft/server.hh"
 
 namespace rpc
@@ -75,10 +75,7 @@ namespace rpc
     {
         if (server.get_status() == ServerStatus::CANDIDATE)
         {
-            if (this->get_term() >= server.get_term())
-            {
-                throw ConvertToFollower();
-            }
+            throw FollowerException();
         }
 
         // ...
