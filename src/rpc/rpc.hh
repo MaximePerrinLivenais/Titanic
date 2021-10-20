@@ -5,6 +5,8 @@
 
 #include "misc/json.hh"
 
+class Server;
+
 namespace rpc
 {
     enum RPC_TYPE
@@ -34,5 +36,4 @@ namespace rpc
             const int term;
             const RPC_TYPE rpc_type;
     };
-
 }

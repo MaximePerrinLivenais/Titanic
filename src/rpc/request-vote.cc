@@ -1,4 +1,6 @@
-#include "rpc/request-vote.hh"
+#include "request-vote.hh"
+
+#include "raft/server.hh"
 
 namespace rpc
 {
@@ -44,4 +46,12 @@ namespace rpc
     {
         return last_log_term;
     }
+
+
+    void RequestVoteRPC::apply(Server &server)
+    {
+        if (server.get_status() == ServerStatus::CANDIDATE)
+            server.count_vote(vote_granted);
+    }
 }
+

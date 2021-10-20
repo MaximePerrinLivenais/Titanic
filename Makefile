@@ -11,13 +11,19 @@ RPC = \
         $(NULL)
 
 UTILS = \
-            src/utils/openmpi/mpi-wrapper.cc \
-            $(NULL)
+        src/utils/openmpi/mpi-wrapper.cc \
+		src/utils/chrono/chrono.cc \
+        $(NULL)
 
-SRC = \
+RAFT = \
+		src/raft/server.cc \
+		$(NULL)
+
+SRC =  \
         src/main.cc \
         $(RPC) \
         $(UTILS) \
+        $(RAFT) \
         $(NULL)
 
 OBJS = $(SRC:.cc=.o)

@@ -1,5 +1,8 @@
 #include "rpc/append-entries.hh"
 
+#include "exception/convert_to_follower.hh"
+#include "raft/server.hh"
+
 namespace rpc
 {
     AppendEntriesRPC::AppendEntriesRPC(const int term,
@@ -38,6 +41,11 @@ namespace rpc
         return serialization;
     }
 
+    const std::vector<int> &AppendEntriesRPC::get_entries() const
+    {
+        return entries;
+    }
+
     unsigned int AppendEntriesRPC::get_leader_id() const
     {
         return leader_id;
@@ -61,5 +69,18 @@ namespace rpc
     unsigned int AppendEntriesRPC::get_leader_commit_index() const
     {
         return leader_commit_index;
+    }
+
+    void AppendEntriesRPC::apply(Server &server)
+    {
+        if (server.get_status() == ServerStatus::CANDIDATE)
+        {
+            if (this->get_term() >= server.get_term())
+            {
+                throw ConvertToFollower();
+            }
+        }
+
+        // ...
     }
 }
