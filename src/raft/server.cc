@@ -2,10 +2,12 @@
 
 #include <cstdlib>
 #include <ctime>
+#include <mpi.h>
 #include <vector>
 
 #include "exception/follower_exception.hh"
 #include "utils/chrono/chrono.hh"
+#include "utils/openmpi/mpi-wrapper.hh"
 
 constexpr unsigned int MIN_TIMEOUT_MILLI = 150;
 constexpr unsigned int MAX_TIMEOUT_MILLI = 300;
@@ -52,9 +54,19 @@ void Server::handle_election_timeout()
     vote_count = 1;
 
     // XXX: Broadcast for requesting vote RPC
+    std::string message = "test";
+    mpi::MPI_Broadcast(message, 0, MPI_COMM_WORLD);
 
     // Retrieve all messages in a vector
     auto queries = std::vector<rpc::RemoteProcedureCall>();
+    auto buffer = mpi::MPI_Listen(MPI_COMM_WORLD);
+
+    while (buffer.has_value())
+    {
+        // XXX: Deserialize the message to query
+        // XXX: Add to queries
+        buffer = mpi::MPI_Listen(MPI_COMM_WORLD);
+    }
 
     // Check queries
     //
@@ -62,7 +74,8 @@ void Server::handle_election_timeout()
     // - if Request vote RPC
     //     count vote with vote_granted
     // - if Apprend entries RPC
-    //     if its term is >= of our current term, then it becomes a follower.
+    //     if its term is >= of our current term, then it becomes a
+    //     follower.
 
     try
     {
