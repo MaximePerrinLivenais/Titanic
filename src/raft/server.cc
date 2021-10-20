@@ -45,6 +45,7 @@ void Server::handle_election_timeout()
 
     current_term += 1;
     current_status = ServerStatus::CANDIDATE;
+    vote_count = 0;
 
     // XXX: Broadcast for requesting vote RPC
 
