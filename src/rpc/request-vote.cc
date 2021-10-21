@@ -1,13 +1,16 @@
 #include "request-vote.hh"
 
+#include <mpi.h>
+
 #include "raft/server.hh"
+#include "rpc/request-vote-response.hh"
 
 namespace rpc
 {
-    RequestVoteRPC::RequestVoteRPC(const int term,
+    RequestVoteRPC::RequestVoteRPC(const unsigned term,
                                    const unsigned int candidate_id,
-                                   const unsigned int last_log_index,
-                                   const unsigned int last_log_term)
+                                   const int last_log_index,
+                                   const int last_log_term)
         : RemoteProcedureCall(term, RPC_TYPE::REQUEST_VOTE_RPC)
         , candidate_id(candidate_id)
         , last_log_index(last_log_index)
@@ -35,12 +38,12 @@ namespace rpc
         return candidate_id;
     }
 
-    unsigned int RequestVoteRPC::get_last_log_index() const
+    int RequestVoteRPC::get_last_log_index() const
     {
         return last_log_index;
     }
 
-    unsigned int RequestVoteRPC::get_last_log_term() const
+    int RequestVoteRPC::get_last_log_term() const
     {
         return last_log_term;
     }
@@ -49,7 +52,22 @@ namespace rpc
     {
         if (server.get_status() == ServerStatus::CANDIDATE)
         {
-            // XXX: Send RequestVoteResponse with granted_vote = false
+            // It already voted for candate_id
+            // Send RequestVoteResponse with granted_vote = false
+            auto response = RequestVoteResponse(server.get_term(), false);
+            auto serialized_response = response.serialize();
+
+            MPI_Send(serialized_response.c_str(), serialized_response.size(),
+                     MPI_CHAR, candidate_id, 0, MPI_COMM_WORLD);
+        }
+        else
+        {
+            // XXX: We have to compare the last_log_index and last_log_term
+            auto response = RequestVoteResponse(server.get_term(), true);
+            auto serialized_response = response.serialize();
+
+            MPI_Send(serialized_response.c_str(), serialized_response.size(),
+                     MPI_CHAR, candidate_id, 0, MPI_COMM_WORLD);
         }
     }
 } // namespace rpc

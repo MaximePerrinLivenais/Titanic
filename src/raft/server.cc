@@ -16,8 +16,12 @@ constexpr unsigned int MAX_TIMEOUT_MILLI = 300;
 Server::Server()
     : current_status(ServerStatus::FOLLOWER)
     , vote_count(0)
-// ... TODO
-{}
+    , current_term(0)
+    , commit_index(0)
+    , last_applied(0)
+{
+    set_election_timeout();
+}
 
 ServerStatus Server::get_status()
 {
@@ -36,12 +40,14 @@ void Server::count_vote(const bool vote_granted)
 
 void Server::set_election_timeout()
 {
-    srand(time(0));
+    srand(time(0) + get_rank());
 
     begin = chrono::get_time_milliseconds();
 
     auto range = MAX_TIMEOUT_MILLI - MIN_TIMEOUT_MILLI;
     election_timeout = std::rand() % (range) + MIN_TIMEOUT_MILLI;
+
+    std::cout << "election_timeout: " << election_timeout << std::endl;
 }
 
 bool Server::check_majority()
@@ -60,14 +66,17 @@ unsigned int Server::get_rank()
     return rank;
 }
 
-void Server::broadcast_rpc()
+void Server::broadcast_request_vote()
 {
     auto rank = get_rank();
 
-    auto last_log_index = log.size() - 1;
+    auto last_log_index = -1;
     auto last_log_term = -1;
     if (!log.empty())
+    {
         last_log_index = log.back().term;
+        last_log_term = log.size() - 1;
+    }
 
     auto request_vote =
         rpc::RequestVoteRPC(current_term, rank, last_log_index, last_log_term);
@@ -77,6 +86,7 @@ void Server::broadcast_rpc()
 
 void Server::run()
 {
+    std::cout << "[RUNNING] Server" << std::endl;
     while (true)
     {
         if (chrono::get_time_milliseconds() - begin >= election_timeout)
@@ -85,6 +95,8 @@ void Server::run()
         auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
         if (query_str_opt.has_value())
         {
+            // std::cout << "Receive: " << query_str_opt.value() << std::endl;
+
             set_election_timeout();
 
             auto query =
@@ -96,6 +108,8 @@ void Server::run()
 
 void Server::handle_election_timeout()
 {
+    std::cout << "[ELECTION] Starting an election" << std::endl;
+
     set_election_timeout();
 
     current_status = ServerStatus::CANDIDATE;
@@ -105,8 +119,8 @@ void Server::handle_election_timeout()
     // It votes for itself
     vote_count = 1;
 
-    // Broadcast for requesting vote RPC
-    broadcast_rpc();
+    // Broadcast request vote RPC
+    broadcast_request_vote();
 
     // Check queries
     //
@@ -136,12 +150,15 @@ void Server::convert_to_follower()
     voted_for = 0;
 
     // XXX: Reset timeout
+    set_election_timeout();
 }
 
 void Server::convert_to_leader()
 {
     // TODO
     current_status = ServerStatus::LEADER;
+
+    std::cout << "[LEADER] term: " << get_term() << std::endl;
 
     // XXX: Send empty AppendEntries RPC (heartbeat)
 }

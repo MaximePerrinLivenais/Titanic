@@ -23,7 +23,8 @@ namespace rpc
     class RemoteProcedureCall
     {
     public:
-        explicit RemoteProcedureCall(const int term, const RPC_TYPE rpc_type);
+        explicit RemoteProcedureCall(const unsigned int term,
+                                     const RPC_TYPE rpc_type);
 
         unsigned int get_term() const;
         RPC_TYPE get_rpc_type() const;

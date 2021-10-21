@@ -8,7 +8,7 @@
 
 namespace rpc
 {
-    RemoteProcedureCall::RemoteProcedureCall(const int term,
+    RemoteProcedureCall::RemoteProcedureCall(const unsigned int term,
                                              const RPC_TYPE rpc_type)
         : term(term)
         , rpc_type(rpc_type)
@@ -28,8 +28,6 @@ namespace rpc
     {
         auto json_obj = json::parse(message);
         auto rpc_type = json_obj["rpc_type"].get<RPC_TYPE>();
-
-        std::cout << rpc_type << "\n";
 
         switch (rpc_type)
         {
