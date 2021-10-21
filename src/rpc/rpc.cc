@@ -4,6 +4,7 @@
 
 #include "append-entries.hh"
 #include "request-vote.hh"
+#include "request-vote-response.hh"
 
 namespace rpc
 {
@@ -34,6 +35,8 @@ namespace rpc
                 return std::make_shared<RequestVoteRPC>(json_obj);
             case APPEND_ENTRIES_RPC:
                 return std::make_shared<AppendEntriesRPC>(json_obj);
+            case REQUEST_VOTE_RESPONSE_RPC:
+                return std::make_shared<RequestVoteResponse>(json_obj);
         }
 
         throw std::invalid_argument("Not corresponding to existing RPCs");

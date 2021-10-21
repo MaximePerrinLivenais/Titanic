@@ -7,8 +7,13 @@ using namespace rpc;
 
 RequestVoteResponse::RequestVoteResponse(const int term,
                                          const bool vote_granted)
-    : RemoteProcedureCall(term)
+    : RemoteProcedureCall(term, RPC_TYPE::REQUEST_VOTE_RESPONSE_RPC)
     , vote_granted(vote_granted)
+{}
+
+RequestVoteResponse::RequestVoteResponse(const json& json_obj)
+    : RequestVoteResponse(json_obj["term"],
+                          json_obj["vote_granted"])
 {}
 
 void RequestVoteResponse::apply(Server &server)
@@ -20,4 +25,10 @@ void RequestVoteResponse::apply(Server &server)
 bool RequestVoteResponse::get_vote_granted()
 {
     return vote_granted;
+}
+
+json RequestVoteResponse::serialize_json() const
+{
+    json serialization = json();
+    return serialization;
 }

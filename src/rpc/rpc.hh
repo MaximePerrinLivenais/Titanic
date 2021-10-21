@@ -12,6 +12,7 @@ namespace rpc
     enum RPC_TYPE
     {
         REQUEST_VOTE_RPC,
+        REQUEST_VOTE_RESPONSE_RPC,
         APPEND_ENTRIES_RPC
     };
 
@@ -29,6 +30,8 @@ namespace rpc
 
             const std::string serialize() const;
             static shared_rpc deserialize(const std::string& message);
+
+            virtual void apply(Server& server) = 0;
 
         private:
             virtual json serialize_json() const = 0;

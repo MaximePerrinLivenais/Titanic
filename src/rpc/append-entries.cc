@@ -61,11 +61,6 @@ namespace rpc
         return prev_log_term;
     }
 
-    const std::vector<int>& AppendEntriesRPC::get_entries() const
-    {
-        return entries;
-    }
-
     unsigned int AppendEntriesRPC::get_leader_commit_index() const
     {
         return leader_commit_index;
