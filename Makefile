@@ -22,7 +22,7 @@ RAFT = \
 	$(NULL)
 
 SRC =  \
-        src/main.cc \
+        src/hello-world.cc \
         $(RPC) \
         $(UTILS) \
         $(RAFT) \
