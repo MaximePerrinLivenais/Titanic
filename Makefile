@@ -1,6 +1,6 @@
 CXX = mpic++
 CXXFLAGS = -std=c++20 -Wall -Werror -Wextra -pedantic
-CPPFLAGS = -Isrc
+CPPFLAGS = -Isrc -Ilib
 
 TARGET = titanic
 
@@ -26,7 +26,3 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) -o $@ $^
-
-hello: src/hello-world.cc
-	mpic++ $< -o $@
-	mpirun $@

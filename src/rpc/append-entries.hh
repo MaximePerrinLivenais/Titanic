@@ -16,6 +16,8 @@ namespace rpc
                                         const std::vector<int> entries,
                                         const unsigned int leader_commit_index);
 
+            explicit AppendEntriesRPC(const json& json_obj);
+
             unsigned int get_leader_id() const;
             unsigned int get_prev_log_index() const;
             unsigned int get_prev_log_term() const;
@@ -23,6 +25,8 @@ namespace rpc
             unsigned int get_leader_commit_index() const;
 
         private:
+            json serialize_json() const;
+
             const unsigned int leader_id;
             const unsigned int prev_log_index;
             const unsigned int prev_log_term;
