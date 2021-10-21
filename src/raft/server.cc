@@ -46,7 +46,7 @@ bool Server::check_majority()
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    return vote_count >= (unsigned int)(rank / 2);
+    return vote_count * 2 >= static_cast<unsigned int>(rank);
 }
 
 void Server::handle_election_timeout()
@@ -127,5 +127,6 @@ void Server::convert_to_follower()
 
 void Server::convert_to_leader()
 {
+    current_status = ServerStatus::LEADER;
     // TODO
 }
