@@ -127,6 +127,8 @@ void Server::convert_to_follower()
 
 void Server::convert_to_leader()
 {
-    current_status = ServerStatus::LEADER;
     // TODO
+    current_status = ServerStatus::LEADER;
+
+    // XXX: Send empty AppendEntries RPC (heartbeat)
 }

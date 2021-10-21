@@ -50,8 +50,11 @@ namespace rpc
 
     void RequestVoteRPC::apply(Server &server)
     {
+
         if (server.get_status() == ServerStatus::CANDIDATE)
-            server.count_vote(vote_granted);
+        {
+            // XXX: Send RequestVoteResponse with granted_vote = false
+        }
     }
 }
 
