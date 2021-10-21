@@ -8,7 +8,7 @@ namespace rpc
                                     const unsigned int candidate_id,
                                     const unsigned int last_log_index,
                                     const unsigned int last_log_term)
-        : RemoteProcedureCall(term, REQUEST_VOTE_RPC),
+        : RemoteProcedureCall(term, RPC_TYPE::REQUEST_VOTE_RPC),
             candidate_id(candidate_id),
             last_log_index(last_log_index),
             last_log_term(last_log_term)

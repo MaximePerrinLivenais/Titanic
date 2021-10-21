@@ -11,7 +11,7 @@ namespace rpc
                                         const unsigned int prev_log_term,
                                         const std::vector<int> entries,
                                         const unsigned int leader_commit_index)
-        : RemoteProcedureCall(term, APPEND_ENTRIES_RPC),
+        : RemoteProcedureCall(term, RPC_TYPE::APPEND_ENTRIES_RPC),
             leader_id(leader_id),
             prev_log_index(prev_log_index),
             prev_log_term(prev_log_term),

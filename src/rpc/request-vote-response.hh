@@ -16,6 +16,7 @@ namespace rpc
 
     private:
         json serialize_json() const;
+
         bool vote_granted;
     };
 } // namespace rpc
