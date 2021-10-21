@@ -17,6 +17,7 @@ Server::Server()
     : current_status(ServerStatus::FOLLOWER)
     , vote_count(0)
     , current_term(0)
+    , voted_for(0)
     , commit_index(0)
     , last_applied(0)
 {
@@ -33,6 +34,16 @@ unsigned int Server::get_term()
     return current_term;
 }
 
+unsigned int Server::get_voted_for()
+{
+    return voted_for;
+}
+
+void Server::set_voted_for(const unsigned int voted_for)
+{
+    this->voted_for = voted_for;
+}
+
 void Server::count_vote(const bool vote_granted)
 {
     vote_count += vote_granted;
@@ -46,8 +57,6 @@ void Server::set_election_timeout()
 
     auto range = MAX_TIMEOUT_MILLI - MIN_TIMEOUT_MILLI;
     election_timeout = std::rand() % (range) + MIN_TIMEOUT_MILLI;
-
-    std::cout << "election_timeout: " << election_timeout << std::endl;
 }
 
 bool Server::check_majority()
@@ -117,6 +126,7 @@ void Server::handle_election_timeout()
     current_term += 1;
 
     // It votes for itself
+    voted_for = get_rank();
     vote_count = 1;
 
     // Broadcast request vote RPC
@@ -157,6 +167,7 @@ void Server::convert_to_leader()
 {
     // TODO
     current_status = ServerStatus::LEADER;
+    voted_for = 0;
 
     std::cout << "[LEADER] term: " << get_term() << std::endl;
 

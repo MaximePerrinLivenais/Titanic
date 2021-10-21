@@ -19,6 +19,9 @@ public:
     void count_vote(const bool vote_granted);
 
     unsigned int get_term();
+    unsigned int get_voted_for();
+    void set_voted_for(const unsigned int voted_for);
+
     void convert_to_follower();
 
     bool check_majority();
