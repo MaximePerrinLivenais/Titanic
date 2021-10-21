@@ -27,8 +27,6 @@ namespace rpc
         auto json_obj = json::parse(message);
         auto rpc_type = json_obj["rpc_type"].get<RPC_TYPE>();
 
-        std::cout << rpc_type << "\n";
-
         switch(rpc_type)
         {
             case REQUEST_VOTE_RPC:
@@ -42,7 +40,7 @@ namespace rpc
         throw std::invalid_argument("Not corresponding to existing RPCs");
     }
 
-    int RemoteProcedureCall::get_term() const
+    unsigned int RemoteProcedureCall::get_term() const
     {
         return term;
     }

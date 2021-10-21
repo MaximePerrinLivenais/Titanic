@@ -1,8 +1,8 @@
 #pragma once
 
+#include <vector>
 #include <queue>
 #include <string>
-#include <vector>
 
 #include "rpc/rpc.hh"
 #include "rpc/append-entries.hh"
@@ -11,7 +11,7 @@
 class Server
 {
 public:
-    Server();
+    Server() = default;
 
     ServerStatus get_status();
 
@@ -39,7 +39,7 @@ private:
     // Persistent state
     unsigned int current_term;
     unsigned int voted_for;
-    std::vector<std::string> log;
+    std::vector<int> log;
 
     // Volatile state
     unsigned int commit_index;

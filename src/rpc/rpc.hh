@@ -25,7 +25,7 @@ namespace rpc
         public:
             explicit RemoteProcedureCall(const int term, const RPC_TYPE rpc_type);
 
-            int get_term() const;
+            unsigned int get_term() const;
             RPC_TYPE get_rpc_type() const;
 
             const std::string serialize() const;
@@ -36,7 +36,7 @@ namespace rpc
         private:
             virtual json serialize_json() const = 0;
 
-            const int term;
+            const unsigned int term;
             const RPC_TYPE rpc_type;
     };
 }

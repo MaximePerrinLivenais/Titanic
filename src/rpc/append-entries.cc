@@ -24,7 +24,7 @@ namespace rpc
                             json_obj["leader_id"],
                             json_obj["prev_log_index"],
                             json_obj["prev_log_term"],
-                            std::vector<int>(0),
+                            json_obj["entries"],
                             json_obj["leader_commit_index"])
     {}
 
@@ -35,7 +35,7 @@ namespace rpc
         serialization["leader_id"] = leader_id;
         serialization["prev_log_index"] = prev_log_index;
         serialization["prev_log_term"] = prev_log_term;
-        // FIXME serialize entries
+        serialization["entries"] = entries;
         serialization["leader_commit_index"] = leader_commit_index;
 
         return serialization;

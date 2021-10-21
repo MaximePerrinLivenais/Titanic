@@ -1,4 +1,5 @@
 #include "mpi.h"
+#include "utils/openmpi/mpi-wrapper.hh"
 #include "raft/server.hh"
 #include "raft/status.hh"
 
@@ -29,13 +30,30 @@ int main(int argc, char *argv[])
     server.set_status(ServerStatus::FOLLOWER);
     if (rank == 0)
     {
-
         server.set_status(ServerStatus::LEADER);
+
+        std::vector<int> entries = {1, 3, 5, 8};
+        rpc::AppendEntriesRPC rpc(0, 0, 0, 0, entries, 0);
+
+        // send RPC
+        std::string message = rpc.serialize();
+        mpi::MPI_Broadcast(message, 0, MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
+
     }
     else
     {
-        std::cout << "Follower\n";
+        MPI_Barrier(MPI_COMM_WORLD);
+        auto message = mpi::MPI_Listen(MPI_COMM_WORLD);
+        if (message.has_value())
+        {
+            rpc::shared_rpc rpc = rpc::RemoteProcedureCall::deserialize(message.value());
+            rpc->apply(server);
+        }
     }
+
+    std::cout << rank << ": Save log\n";
+    server.save_log();
 
 
 

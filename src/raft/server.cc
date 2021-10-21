@@ -4,7 +4,7 @@
 #include <ctime>
 #include <mpi.h>
 #include <vector>
-#include <>
+#include <fstream>
 
 #include "exception/follower_exception.hh"
 #include "utils/chrono/chrono.hh"
@@ -13,11 +13,11 @@
 constexpr unsigned int MIN_TIMEOUT_MILLI = 150;
 constexpr unsigned int MAX_TIMEOUT_MILLI = 300;
 
-Server::Server()
-    : current_status(ServerStatus::FOLLOWER)
-    , vote_count(0)
+/*Server::Server()
+    //: current_status(ServerStatus::FOLLOWER)
+    //, vote_count(0)
 // ... TODO
-{}
+{}*/
 
 ServerStatus Server::get_status()
 {
@@ -138,7 +138,7 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
 {
     // 1. Reply false if term < currentTerm (§5.1)
     if (rpc.get_term() < current_term)
-        return false;
+        return ;
 
     // 2. Reply false if log doesn’t contain an entry at prevLogIndex
     // whose term matches prevLogTerm (§5.3)
@@ -158,12 +158,11 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
     log.insert(log.end(), rpc.get_entries().begin(), rpc.get_entries().end());
 
 
-
     // 5. If leaderCommit > commitIndex, 
     // set commitIndex = min(leaderCommit, index of last new entry
-
+    unsigned int last_entry = 0;//log.size() - 1;
     if (rpc.get_leader_commit_index() > commit_index)
-        commit_index = std::min(rpc.get_leader_commit_index(), log.size() - 1);
+        commit_index = std::min(rpc.get_leader_commit_index(), last_entry);
 
 }
 
