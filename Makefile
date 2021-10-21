@@ -33,3 +33,6 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) -o $@ $^
+
+clean:
+	$(RM) $(TARGET) $(OBJS)
