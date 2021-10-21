@@ -6,6 +6,7 @@ TARGET = titanic
 
 RPC = \
         src/rpc/append-entries.cc \
+        src/rpc/append-entries-response.cc \
         src/rpc/request-vote.cc \
         src/rpc/request-vote-response.cc \
         src/rpc/rpc.cc \
