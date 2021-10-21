@@ -95,7 +95,7 @@ void Server::run()
         auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
         if (query_str_opt.has_value())
         {
-            // std::cout << "Receive: " << query_str_opt.value() << std::endl;
+            std::cout << "Receive: " << query_str_opt.value() << std::endl;
 
             set_election_timeout();
 
