@@ -35,6 +35,7 @@ json RequestVoteResponse::serialize_json() const
     json serialization = json();
 
     serialization["vote_granted"] = vote_granted;
+    serialization["term"] = get_term();
 
     return serialization;
 }

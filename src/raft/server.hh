@@ -32,7 +32,7 @@ public:
     void convert_to_leader();
 
     static unsigned int get_rank();
-    void broadcast_rpc();
+    void broadcast_request_vote();
 
 private:
     int get_last_log_index();
@@ -58,8 +58,8 @@ private:
     std::vector<rpc::LogEntry> log;
 
     // Volatile state
-    unsigned int commit_index;
-    unsigned int last_applied;
+    int commit_index;
+    int last_applied;
 
     // Leader
     std::vector<unsigned int> next_index;

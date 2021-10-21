@@ -9,7 +9,7 @@
 
 namespace rpc
 {
-    RemoteProcedureCall::RemoteProcedureCall(const int term,
+    RemoteProcedureCall::RemoteProcedureCall(const unsigned int term,
                                              const RPC_TYPE rpc_type)
         : term(term)
         , rpc_type(rpc_type)
