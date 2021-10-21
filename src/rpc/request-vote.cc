@@ -61,8 +61,10 @@ namespace rpc
         }
         else if (server.get_status() == ServerStatus::FOLLOWER)
         {
-            // XXX: We have to compare the last_log_index and last_log_term
-            vote_granted = true;
+            if (server.get_voted_for() > 0)
+                vote_granted = false;
+            else
+                server.set_voted_for(candidate_id);
         }
 
         auto response = RequestVoteResponse(server.get_term(), vote_granted);

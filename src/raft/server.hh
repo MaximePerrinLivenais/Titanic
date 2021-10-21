@@ -21,11 +21,16 @@ public:
     void count_vote(const bool vote_granted);
 
     unsigned int get_term();
+
     void save_log() const;
 
     void set_status(ServerStatus status);
     void on_append_entries_rpc(const rpc::AppendEntriesRPC &rpc);
     void on_append_entries_response(const rpc::AppendEntriesResponse &rpc);
+
+    unsigned int get_voted_for();
+    void set_voted_for(const unsigned int voted_for);
+
     void convert_to_follower();
 
     bool check_majority();
