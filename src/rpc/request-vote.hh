@@ -11,19 +11,19 @@ namespace rpc
                                 const unsigned int last_log_index,
                                 const unsigned int last_log_term);
 
-            explicit RequestVoteRPC(const json& json_obj);
+        explicit RequestVoteRPC(const json &json_obj);
 
-            unsigned int get_candidate_id() const;
-            unsigned int get_last_log_index() const;
-            unsigned int get_last_log_term() const;
+        unsigned int get_candidate_id() const;
+        unsigned int get_last_log_index() const;
+        unsigned int get_last_log_term() const;
 
-            void apply(Server &server);
+        void apply(Server &server);
 
-        private:
-            json serialize_json() const;
+    private:
+        json serialize_json() const;
 
-            const unsigned int candidate_id;
-            const unsigned int last_log_index;
-            const unsigned int last_log_term;
+        const unsigned int candidate_id;
+        const unsigned int last_log_index;
+        const unsigned int last_log_term;
     };
 } // namespace rpc

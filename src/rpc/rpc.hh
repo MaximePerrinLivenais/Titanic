@@ -22,21 +22,21 @@ namespace rpc
 
     class RemoteProcedureCall
     {
-        public:
-            explicit RemoteProcedureCall(const int term, const RPC_TYPE rpc_type);
+    public:
+        explicit RemoteProcedureCall(const int term, const RPC_TYPE rpc_type);
 
-            int get_term() const;
-            RPC_TYPE get_rpc_type() const;
+        unsigned int get_term() const;
+        RPC_TYPE get_rpc_type() const;
 
-            const std::string serialize() const;
-            static shared_rpc deserialize(const std::string& message);
+        const std::string serialize() const;
+        static shared_rpc deserialize(const std::string &message);
 
-            virtual void apply(Server& server) = 0;
+        virtual void apply(Server &server) = 0;
 
-        private:
-            virtual json serialize_json() const = 0;
+    private:
+        virtual json serialize_json() const = 0;
 
-            const int term;
-            const RPC_TYPE rpc_type;
+        const unsigned int term;
+        const RPC_TYPE rpc_type;
     };
-}
+} // namespace rpc
