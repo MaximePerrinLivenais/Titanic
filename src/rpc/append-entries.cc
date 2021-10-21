@@ -73,6 +73,7 @@ namespace rpc
             throw FollowerException();
         }
 
-        // ...
+
+        server.on_append_entries_rpc(*this);
     }
 }

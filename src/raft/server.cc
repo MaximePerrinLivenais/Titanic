@@ -4,6 +4,7 @@
 #include <ctime>
 #include <mpi.h>
 #include <vector>
+#include <>
 
 #include "exception/follower_exception.hh"
 #include "utils/chrono/chrono.hh"
@@ -131,4 +132,53 @@ void Server::convert_to_leader()
     current_status = ServerStatus::LEADER;
 
     // XXX: Send empty AppendEntries RPC (heartbeat)
+}
+
+void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
+{
+    // 1. Reply false if term < currentTerm (§5.1)
+    if (rpc.get_term() < current_term)
+        return false;
+
+    // 2. Reply false if log doesn’t contain an entry at prevLogIndex
+    // whose term matches prevLogTerm (§5.3)
+
+    // XXX: check size
+    //if (log[prev_log_index].term != prev_log_term)
+        //return false;
+        //
+
+    // 3. If an existing entry conflicts with a new one 
+    // (same index but different terms), delete the existing entry and all that
+    // follow it (§5.3)
+
+
+    // 4.  Append any new entries not already in the log
+    // XXX: check that entries are not already in the log
+    log.insert(log.end(), rpc.get_entries().begin(), rpc.get_entries().end());
+
+
+
+    // 5. If leaderCommit > commitIndex, 
+    // set commitIndex = min(leaderCommit, index of last new entry
+
+    if (rpc.get_leader_commit_index() > commit_index)
+        commit_index = std::min(rpc.get_leader_commit_index(), log.size() - 1);
+
+}
+
+void Server::save_log() const
+{
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    std::ofstream save_file("server_n" + std::to_string(rank) + ".log");
+
+    for (const auto& entry : log)
+        save_file << entry << "\n";
+}
+
+void Server::set_status(ServerStatus status)
+{
+    current_status = status;
 }

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "rpc/rpc.hh"
+#include "rpc/append-entries.hh"
 #include "status.hh"
 
 class Server
@@ -17,6 +18,10 @@ public:
     void count_vote(const bool vote_granted);
 
     unsigned int get_term();
+    void save_log() const;
+
+    void set_status(ServerStatus status);
+    void on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc);
 
 private:
     void handle_election_timeout();
