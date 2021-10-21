@@ -10,16 +10,17 @@ RPC = \
         src/rpc/request-vote.cc \
         src/rpc/request-vote-response.cc \
         src/rpc/rpc.cc \
+        src/rpc/log-entry.cc \
         $(NULL)
 
 UTILS = \
         src/utils/openmpi/mpi-wrapper.cc \
-	src/utils/chrono/chrono.cc \
+		src/utils/chrono/chrono.cc \
         $(NULL)
 
 RAFT = \
-	src/raft/server.cc \
-	$(NULL)
+		src/raft/server.cc \
+		$(NULL)
 
 SRC =  \
         src/hello-world.cc \

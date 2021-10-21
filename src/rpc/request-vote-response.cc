@@ -18,7 +18,11 @@ RequestVoteResponse::RequestVoteResponse(const json& json_obj)
 void RequestVoteResponse::apply(Server &server)
 {
     if (server.get_status() == ServerStatus::CANDIDATE)
+    {
         server.count_vote(vote_granted);
+        if (server.check_majority())
+            server.convert_to_leader();
+    }
 }
 
 bool RequestVoteResponse::get_vote_granted()

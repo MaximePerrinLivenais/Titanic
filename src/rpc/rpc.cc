@@ -2,15 +2,17 @@
 
 #include <iostream>
 
-#include "append-entries.hh"
 #include "append-entries-response.hh"
-#include "request-vote.hh"
+#include "append-entries.hh"
 #include "request-vote-response.hh"
+#include "request-vote.hh"
 
 namespace rpc
 {
-    RemoteProcedureCall::RemoteProcedureCall(const int term, const RPC_TYPE rpc_type)
-        : term(term), rpc_type(rpc_type)
+    RemoteProcedureCall::RemoteProcedureCall(const int term,
+                                             const RPC_TYPE rpc_type)
+        : term(term)
+        , rpc_type(rpc_type)
     {}
 
     const std::string RemoteProcedureCall::serialize() const
@@ -23,21 +25,21 @@ namespace rpc
         return serialization.dump(4);
     }
 
-    shared_rpc RemoteProcedureCall::deserialize(const std::string& message)
+    shared_rpc RemoteProcedureCall::deserialize(const std::string &message)
     {
         auto json_obj = json::parse(message);
         auto rpc_type = json_obj["rpc_type"].get<RPC_TYPE>();
 
-        switch(rpc_type)
+        switch (rpc_type)
         {
-            case REQUEST_VOTE_RPC:
-                return std::make_shared<RequestVoteRPC>(json_obj);
-            case REQUEST_VOTE_RESPONSE:
-                return std::make_shared<RequestVoteResponse>(json_obj);
-            case APPEND_ENTRIES_RPC:
-                return std::make_shared<AppendEntriesRPC>(json_obj);
-            case APPEND_ENTRIES_RESPONSE:
-                return std::make_shared<AppendEntriesResponse>(json_obj);
+        case REQUEST_VOTE_RPC:
+            return std::make_shared<RequestVoteRPC>(json_obj);
+        case REQUEST_VOTE_RESPONSE:
+            return std::make_shared<RequestVoteResponse>(json_obj);
+        case APPEND_ENTRIES_RPC:
+            return std::make_shared<AppendEntriesRPC>(json_obj);
+        case APPEND_ENTRIES_RESPONSE:
+            return std::make_shared<AppendEntriesResponse>(json_obj);
         }
 
         throw std::invalid_argument("Not corresponding to existing RPCs");
@@ -52,4 +54,4 @@ namespace rpc
     {
         return rpc_type;
     }
-}
+} // namespace rpc
