@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
+// XXX Remove iostream include
 #include <iostream>
 #include <mpi.h>
 #include <vector>
@@ -97,6 +98,7 @@ void Server::broadcast_request_vote()
 
 void Server::run()
 {
+    // XXX: Debugging information
     std::cout << "[RUNNING] Server" << std::endl;
     while (true)
     {
@@ -106,6 +108,7 @@ void Server::run()
         auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
         if (query_str_opt.has_value())
         {
+            // XXX: Debugging information
             std::cout << "Receive: " << query_str_opt.value() << std::endl;
 
             set_election_timeout();
@@ -184,6 +187,7 @@ void Server::update_commit_index()
 
 void Server::handle_election_timeout()
 {
+    // XXX: Debugging information
     std::cout << "[ELECTION] Starting an election" << std::endl;
 
     set_election_timeout();
@@ -247,6 +251,7 @@ void Server::convert_to_leader()
     // TODO init match_index;
     match_index = std::vector<unsigned int>(size, 0);
 
+    // XXX: Debugging information
     std::cout << "[LEADER] term: " << get_term() << std::endl;
 
     // XXX: Send empty AppendEntries RPC (heartbeat)

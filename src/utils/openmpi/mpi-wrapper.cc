@@ -43,7 +43,7 @@ namespace mpi
         auto buffer = std::vector<char>(count);
         MPI_Recv(buffer.data(), count, MPI_CHAR, source, tag, comm, &status);
 
-        return std::make_optional<std::string>(std::string(buffer.data()));
+        return std::make_optional<std::string>(buffer.data(), count);
     }
 
     void MPI_Broadcast(const std::string &message, const int tag,
