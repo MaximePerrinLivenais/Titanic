@@ -4,14 +4,18 @@
 
 #include "append-entries-response.hh"
 #include "append-entries.hh"
+#include "raft/server.hh"
 #include "request-vote-response.hh"
 #include "request-vote.hh"
+
+using namespace message;
 
 namespace rpc
 {
     RemoteProcedureCall::RemoteProcedureCall(const unsigned int term,
                                              const RPC_TYPE rpc_type)
-        : term(term)
+        : Message(MSG_TYPE::RPC_MESSAGE)
+        , term(term)
         , rpc_type(rpc_type)
     {}
 
@@ -24,8 +28,15 @@ namespace rpc
 
         return serialization.dump(4);
     }
+    void RemoteProcedureCall::apply_message(Server& server)
+    {
+        if (server.get_status() == CRASHED)
+            return;
 
-    shared_rpc RemoteProcedureCall::deserialize(const std::string &message)
+        this->apply(server);
+    }
+
+    shared_rpc RemoteProcedureCall::deserialize(const std::string& message)
     {
         auto json_obj = json::parse(message);
         auto rpc_type = json_obj["rpc_type"].get<RPC_TYPE>();

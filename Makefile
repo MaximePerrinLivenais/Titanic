@@ -5,6 +5,7 @@ CPPFLAGS = -Isrc -Ilib
 TARGET = titanic
 
 RPC = \
+	src/message/message.cc \
         src/rpc/append-entries.cc \
         src/rpc/append-entries-response.cc \
         src/rpc/request-vote.cc \
@@ -23,7 +24,7 @@ RAFT = \
 		$(NULL)
 
 SRC =  \
-        src/hello-world.cc \
+        src/main.cc \
         $(RPC) \
         $(UTILS) \
         $(RAFT) \

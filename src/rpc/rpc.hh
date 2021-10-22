@@ -3,9 +3,10 @@
 #include <memory>
 #include <string>
 
+#include "message/message.hh"
 #include "misc/json.hh"
 
-class Server;
+using namespace message;
 
 namespace rpc
 {
@@ -21,7 +22,7 @@ namespace rpc
 
     using shared_rpc = std::shared_ptr<RemoteProcedureCall>;
 
-    class RemoteProcedureCall
+    class RemoteProcedureCall : public message::Message
     {
     public:
         explicit RemoteProcedureCall(const unsigned int term,
@@ -31,14 +32,15 @@ namespace rpc
         RPC_TYPE get_rpc_type() const;
 
         const std::string serialize() const;
-        static shared_rpc deserialize(const std::string &message);
+        static shared_rpc deserialize(const std::string& message);
 
-        virtual void apply(Server &server) = 0;
+        void apply_message(Server& server);
 
         virtual ~RemoteProcedureCall() = default;
 
     private:
         virtual json serialize_json() const = 0;
+        virtual void apply(Server& server) = 0;
 
         const unsigned int term;
         const RPC_TYPE rpc_type;

@@ -4,12 +4,25 @@
 #include <string>
 #include <vector>
 
+#include "message/message.hh"
 #include "rpc/append-entries-response.hh"
 #include "rpc/append-entries.hh"
 #include "rpc/log-entry.hh"
 #include "rpc/request-vote-response.hh"
 #include "rpc/request-vote.hh"
 #include "status.hh"
+
+// namespace rpc
+//{
+//    class RemoteProcedureCall;
+//    using shared_rpc = std::shared_ptr<RemoteProcedureCall>;
+//
+//    class AppendEntriesRPC;
+//    class AppendEntriesResponse;
+//    class LogEntry;
+//    class RequestVoteRPC;
+//    class RequestVoteResponse;
+//} // namespace rpc
 
 class Server
 {
@@ -18,6 +31,7 @@ public:
 
     // XXX: For testing purpose
     void set_status(const ServerStatus& server_status);
+    ServerStatus get_status() const;
 
     void run();
 

@@ -68,9 +68,14 @@ void Server::run()
 
             reset_timer();
 
+            // TODO here we can deserialize direclty in message
             auto query =
                 rpc::RemoteProcedureCall::deserialize(query_str_opt.value());
 
+            // XXX
+            // here call apply_message
+            // In the case of rpc -> do the same as apply_query
+            // In the case of repl -> apply directly
             apply_query(query);
 
             query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
@@ -215,6 +220,7 @@ void Server::handle_election_timeout()
     //     - handle_election_timeout once again
 }
 
+// TODO refacto this function since it breaks the apply_message principle
 void Server::apply_query(rpc::shared_rpc query)
 {
     if (query->get_term() > current_term)
@@ -223,7 +229,7 @@ void Server::apply_query(rpc::shared_rpc query)
         convert_to_follower();
     }
 
-    query->apply(*this);
+    query->apply_message(*this);
 }
 
 void Server::convert_to_follower()
@@ -415,4 +421,9 @@ int Server::get_prev_log_term()
 void Server::set_status(const ServerStatus& server_status)
 {
     current_status = server_status;
+}
+
+ServerStatus Server::get_status() const
+{
+    return current_status;
 }
