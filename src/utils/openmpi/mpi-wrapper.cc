@@ -72,4 +72,12 @@ namespace mpi
 
         return size;
     }
+
+    int MPI_Get_group_comm_rank(const MPI_Comm comm)
+    {
+        int rank;
+        MPI_Comm_rank(comm, &rank);
+
+        return rank;
+    }
 } // namespace mpi

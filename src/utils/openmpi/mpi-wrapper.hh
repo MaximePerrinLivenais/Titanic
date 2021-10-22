@@ -17,4 +17,5 @@ namespace mpi
                         const MPI_Comm comm);
 
     int MPI_Get_group_comm_size(const MPI_Comm comm);
+    int MPI_Get_group_comm_rank(const MPI_Comm comm);
 }

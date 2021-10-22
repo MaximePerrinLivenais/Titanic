@@ -34,6 +34,9 @@ private:
     void convert_to_leader();
     bool check_majority();
 
+    // Server rules
+    void update_commit_index();
+
     ServerStatus current_status;
     unsigned int election_timeout;
     unsigned int vote_count;

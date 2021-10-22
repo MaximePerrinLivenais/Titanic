@@ -47,6 +47,8 @@ bool Server::check_majority()
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    // XXX: what if you have 4 followers in with size = 10
+    // I think we should check for votre_count * 2 + 1 >= ..
     return vote_count * 2 >= static_cast<unsigned int>(rank);
 }
 
@@ -57,8 +59,64 @@ int Server::get_last_log_index()
 
 void Server::check_leader_rules()
 {
-    return; // FIXME
+    int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
+    int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
+
+
+    for (int idx = 1; idx < size; idx++)
+    {
+        if (idx == rank)
+            continue;
+
+        unsigned int last_log_index = get_last_log_index();
+        // If last log index ≥ nextIndex for a follower
+        if (last_log_index >= next_index[idx])
+        {
+            // send AppendEntries RPC with log entries starting at nextIndex
+            std::vector<int> entries(log.begin() + next_index[idx],
+                    log.end()); // FIXME: check if it is the correct range
+
+            // XXX: last_log_term = log[last_log_index].term
+            rpc::AppendEntriesRPC rpc(current_term, rank, last_log_index, 0, entries, 0);
+            std::string message = rpc.serialize();
+
+            // TODO: use enum RPC instead of dummy tag
+            MPI_Send(message.data(), message.size(), MPI_CHAR, idx, 0, MPI_COMM_WORLD);
+        }
+    }
+
+
+    // If there exists an N such that N > commitIndex, a majority of matchIndex[i] ≥ N,
+    // and log[N].term == current
+    // Term:set commitIndex = N (§5.3, §5.4).
+
 }
+
+void Server::update_commit_index()
+{
+    int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
+    bool updated = true;
+    while (updated)
+    {
+        unsigned int n = commit_index + 1;
+
+        int count = 0;
+        for (int i = 0; i < size; i++)
+        {
+            if (match_index[i] >= n)
+                count++;
+        }
+
+        // XXX: get real number of servers to check majority
+        // check next_index.size()
+        if (2 * count > size)
+            commit_index = n;
+
+        // If commit_index and n are equal it means we updated it in the loop
+        updated = commit_index == n;
+    }
+}
+
 
 void Server::handle_election_timeout()
 {
