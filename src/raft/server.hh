@@ -40,10 +40,11 @@ private:
 
     void apply_follower_and_candidate_rules();
     void apply_leader_rules();
+    void apply_rules();
 
     void handle_election_timeout();
     void reset_timer();
-    void apply_queries(std::vector<rpc::shared_rpc>& queries);
+    void apply_query(rpc::shared_rpc query);
 
     // Server rules
     void update_commit_index();
@@ -53,6 +54,8 @@ private:
     void leader_heartbeat();
 
     // ----------- Attributes -----------
+
+    static const unsigned int heartbeat_time = 30;
 
     ServerStatus current_status;
 

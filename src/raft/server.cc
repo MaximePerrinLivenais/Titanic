@@ -71,7 +71,7 @@ void Server::run()
             auto query =
                 rpc::RemoteProcedureCall::deserialize(query_str_opt.value());
 
-            query->apply(*this);
+            apply_query(query);
 
             query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
         }
@@ -91,6 +91,13 @@ void Server::apply_follower_and_candidate_rules()
 
 void Server::apply_leader_rules()
 {
+    if (chrono::get_time_milliseconds() - begin >= heartbeat_time)
+    {
+        begin = chrono::get_time_milliseconds();
+        leader_heartbeat();
+        return;
+    }
+
     int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
     int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
 
@@ -123,6 +130,17 @@ void Server::apply_leader_rules()
     // If there exists an N such that N > commitIndex, a majority of
     // matchIndex[i] ≥ N, and log[N].term == current Term:set commitIndex = N
     // (§5.3, §5.4).
+}
+
+void Server::apply_rules()
+{
+    // If commitIndex > lastApplied: increment lastApplied, apply
+    // log[lastApplied] to state machine (§5.3)
+    if (commit_index > last_applied)
+    {
+        last_applied++;
+        // XXX: Apply it
+    }
 }
 
 void Server::leader_heartbeat()
@@ -197,12 +215,15 @@ void Server::handle_election_timeout()
     //     - handle_election_timeout once again
 }
 
-void Server::apply_queries(std::vector<rpc::shared_rpc>& queries)
+void Server::apply_query(rpc::shared_rpc query)
 {
-    for (auto& query : queries)
+    if (query->get_term() > current_term)
     {
-        query->apply(*this);
+        current_term = query->get_term();
+        convert_to_follower();
     }
+
+    query->apply(*this);
 }
 
 void Server::convert_to_follower()
@@ -210,7 +231,7 @@ void Server::convert_to_follower()
     current_status = ServerStatus::FOLLOWER;
     voted_for = 0;
 
-    // XXX: Reset timeout
+    // Reset timeout
     reset_timer();
 }
 
@@ -223,18 +244,17 @@ void Server::convert_to_leader()
 
     // For each server, index of the next log entry to send to that server
     // (initialized to leader last log index + 1)
-    // TODO init next_index;
-    next_index = std::vector<unsigned int>(log.size(), 0);
+    next_index = std::vector<unsigned int>(size, log.size());
 
     // For each server, index of highest log entry known to be replicated on
     // server (initialized to 0, increases monotonically)
-    // TODO init match_index;
     match_index = std::vector<unsigned int>(size, 0);
 
     // XXX: Debugging information
     std::cout << "[LEADER] term: " << current_term << std::endl;
 
-    // XXX: Send empty AppendEntries RPC (heartbeat)
+    // Send empty AppendEntries RPC (heartbeat)
+    leader_heartbeat();
 }
 
 void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
