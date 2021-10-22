@@ -21,8 +21,6 @@ public:
 
     void run();
 
-    void count_vote(const bool vote_granted);
-
     void save_log() const;
 
     void on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc);
@@ -30,23 +28,31 @@ public:
     void on_request_vote_rpc(const rpc::RequestVoteRPC& rpc);
     void on_request_vote_response(const rpc::RequestVoteResponse& rpc);
 
-    void convert_to_follower();
-
     bool check_majority();
-    void convert_to_leader();
-
-    void broadcast_request_vote();
 
 private:
+    void convert_to_follower();
+    void convert_to_leader();
+
     int get_last_log_index();
-    void check_leader_rules();
+    int get_prev_log_index();
+    int get_prev_log_term();
+
+    void apply_follower_and_candidate_rules();
+    void apply_leader_rules();
 
     void handle_election_timeout();
-    void set_election_timeout();
+    void reset_timer();
     void apply_queries(std::vector<rpc::shared_rpc>& queries);
 
     // Server rules
     void update_commit_index();
+
+    // Messages
+    void broadcast_request_vote();
+    void leader_heartbeat();
+
+    // ----------- Attributes -----------
 
     ServerStatus current_status;
 
