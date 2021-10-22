@@ -19,12 +19,11 @@ namespace rpc
         , leader_commit_index(leader_commit_index)
     {}
 
-    // XXX logentry serialization
-    AppendEntriesRPC::AppendEntriesRPC(const json &json_obj)
-        : AppendEntriesRPC(json_obj["term"], json_obj["leader_id"],
-                           json_obj["prev_log_index"],
-                           json_obj["prev_log_term"], std::vector<LogEntry>(),
-                           json_obj["leader_commit_index"])
+    AppendEntriesRPC::AppendEntriesRPC(const json& json_obj)
+        : AppendEntriesRPC(
+            json_obj["term"], json_obj["leader_id"], json_obj["prev_log_index"],
+            json_obj["prev_log_term"], LogEntry::serialize(json_obj["entries"]),
+            json_obj["leader_commit_index"])
     {}
 
     json AppendEntriesRPC::serialize_json() const
@@ -34,13 +33,16 @@ namespace rpc
         serialization["leader_id"] = leader_id;
         serialization["prev_log_index"] = prev_log_index;
         serialization["prev_log_term"] = prev_log_term;
-        // serialization["entries"] = entries;
         serialization["leader_commit_index"] = leader_commit_index;
+
+        serialization["entries"] = json::array();
+        for (const auto& entry : entries)
+            serialization["entries"].push_back(entry.serialize());
 
         return serialization;
     }
 
-    const std::vector<LogEntry> &AppendEntriesRPC::get_entries() const
+    const std::vector<LogEntry>& AppendEntriesRPC::get_entries() const
     {
         return entries;
     }
@@ -65,7 +67,7 @@ namespace rpc
         return leader_commit_index;
     }
 
-    void AppendEntriesRPC::apply(Server &server)
+    void AppendEntriesRPC::apply(Server& server)
     {
         if (server.get_status() == ServerStatus::CANDIDATE)
         {

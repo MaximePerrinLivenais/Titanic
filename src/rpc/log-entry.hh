@@ -1,14 +1,27 @@
 #pragma once
 
 #include <string>
+#include <vector>
+
+#include "misc/json.hh"
 
 namespace rpc
 {
-    struct LogEntry
+    class LogEntry
     {
+    public:
+        LogEntry() = default;
         explicit LogEntry(const std::string command, const unsigned int term);
+        explicit LogEntry(const json& json_obj);
 
-        std::string command;
+        const std::string serialize() const;
+        static std::vector<LogEntry> serialize(const json& json_obj);
+
+        unsigned int get_term() const;
+        std::string get_command() const;
+
+    private:
         unsigned int term;
+        std::string command;
     };
 } // namespace rpc

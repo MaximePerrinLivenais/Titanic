@@ -86,7 +86,7 @@ void Server::broadcast_request_vote()
     auto last_log_term = -1;
     if (!log.empty())
     {
-        last_log_index = log.back().term;
+        last_log_index = log.back().get_term();
         last_log_term = log.size() - 1;
     }
 
@@ -140,7 +140,7 @@ void Server::check_leader_rules()
         if (last_log_index >= next_index[idx])
         {
             // send AppendEntries RPC with log entries starting at nextIndex
-            std::vector<rpc::LogEntry> entries(
+            /*std::vector<rpc::LogEntry> entries(
                 log.begin() + next_index[idx],
                 log.end()); // FIXME: check if it is the correct range
 
@@ -151,7 +151,7 @@ void Server::check_leader_rules()
 
             // TODO: use enum RPC instead of dummy tag
             MPI_Send(message.data(), message.size(), MPI_CHAR, idx, 0,
-                     MPI_COMM_WORLD);
+                     MPI_COMM_WORLD);*/
         }
     }
 
@@ -217,9 +217,9 @@ void Server::handle_election_timeout()
     //     - handle_election_timeout once again
 }
 
-void Server::apply_queries(std::vector<rpc::shared_rpc> &queries)
+void Server::apply_queries(std::vector<rpc::shared_rpc>& queries)
 {
-    for (auto &query : queries)
+    for (auto& query : queries)
     {
         query->apply(*this);
     }
@@ -257,7 +257,7 @@ void Server::convert_to_leader()
     // XXX: Send empty AppendEntries RPC (heartbeat)
 }
 
-void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC &rpc)
+void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
 {
     unsigned int last_log_index = get_last_log_index();
     int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
@@ -305,7 +305,7 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC &rpc)
              MPI_COMM_WORLD);
 }
 
-void Server::on_append_entries_response(const rpc::AppendEntriesResponse &rpc)
+void Server::on_append_entries_response(const rpc::AppendEntriesResponse& rpc)
 {
     unsigned int follower_index = rpc.get_follower_index();
     if (rpc.get_success())
@@ -330,8 +330,8 @@ void Server::save_log() const
 
     std::ofstream save_file("server_n" + std::to_string(rank) + ".log");
 
-    for (const auto &entry : log)
-        save_file << entry.command << "\n";
+    for (const auto& entry : log)
+        save_file << entry.get_command() << "\n";
 }
 
 void Server::set_status(ServerStatus status)
