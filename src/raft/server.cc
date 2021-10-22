@@ -213,17 +213,28 @@ void Server::convert_to_leader()
 
 void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
 {
+    int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
+
     // 1. Reply false if term < currentTerm (§5.1)
     if (rpc.get_term() < current_term)
-        return ;
+    {
+        rpc::AppendEntriesResponse response(current_term, false, rank);
+        std::string message = response.serialize();
+        MPI_Send(message.data(), message.size(), MPI_CHAR, rpc.get_leader_id(),
+                0, MPI_COMM_WORLD);
+        return;
+    }
 
     // 2. Reply false if log doesn’t contain an entry at prevLogIndex
     // whose term matches prevLogTerm (§5.3)
-
-    // XXX: check size
-    //if (log[prev_log_index].term != prev_log_term)
-        //return false;
-        //
+    // XXX: log[prev_log_index].term
+    /*if (log[prev_log_index].term != prev_log_term)
+    {
+        rpc::AppendEntriesResponse response(current_term, false, rank);
+        std::string message = response.serialize();
+        MPI_Send(message.data(), message.size(), MPI_CHAR, rpc.get_leader_id(),
+                0, MPI_COMM_WORLD);
+    }*/
 
     // 3. If an existing entry conflicts with a new one 
     // (same index but different terms), delete the existing entry and all that
@@ -240,7 +251,34 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
     unsigned int last_entry = 0;//log.size() - 1;
     if (rpc.get_leader_commit_index() > commit_index)
         commit_index = std::min(rpc.get_leader_commit_index(), last_entry);
+
+    rpc::AppendEntriesResponse response(current_term, true, rank);
+    std::string message = response.serialize();
+    MPI_Send(message.data(), message.size(), MPI_CHAR, rpc.get_leader_id(),
+            0, MPI_COMM_WORLD);
 }
+
+void Server::on_append_entries_response(const rpc::AppendEntriesResponse& rpc)
+{
+    unsigned int follower_index = rpc.get_follower_index();
+    if (rpc.get_success())
+    {
+        // XXX: last_log_index might changed between the AppendEntries and the response
+        // we need the follower to send the index where he stops its log
+        // and use rpc.last_log_index instead
+        match_index[follower_index] = get_last_log_index();
+        next_index[follower_index] = match_index[follower_index];
+    }
+    else
+    {
+        next_index[follower_index]--;
+        // TODO: resend
+    }
+}
+
+
+
+
 
 void Server::save_log() const
 {

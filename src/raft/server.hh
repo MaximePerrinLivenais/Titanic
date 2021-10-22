@@ -5,6 +5,7 @@
 #include <string>
 
 #include "rpc/append-entries.hh"
+#include "rpc/append-entries-response.hh"
 #include "status.hh"
 
 class Server
@@ -21,6 +22,7 @@ public:
 
     void set_status(ServerStatus status);
     void on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc);
+    void on_append_entries_response(const rpc::AppendEntriesResponse& rpc);
 
 private:
     int get_last_log_index();
