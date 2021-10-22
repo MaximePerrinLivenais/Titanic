@@ -15,17 +15,12 @@ RequestVoteResponse::RequestVoteResponse(const json& json_obj)
     : RequestVoteResponse(json_obj["term"], json_obj["vote_granted"])
 {}
 
-void RequestVoteResponse::apply(Server &server)
+void RequestVoteResponse::apply(Server& server)
 {
-    if (server.get_status() == ServerStatus::CANDIDATE)
-    {
-        server.count_vote(vote_granted);
-        if (server.check_majority())
-            server.convert_to_leader();
-    }
+    server.on_request_vote_response(*this);
 }
 
-bool RequestVoteResponse::get_vote_granted()
+bool RequestVoteResponse::get_vote_granted() const
 {
     return vote_granted;
 }

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "exception/follower_exception.hh"
-#include "rpc/request-vote.hh"
 #include "utils/chrono/chrono.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
@@ -27,26 +26,6 @@ Server::Server()
     set_election_timeout();
 }
 
-ServerStatus Server::get_status()
-{
-    return current_status;
-}
-
-unsigned int Server::get_term()
-{
-    return current_term;
-}
-
-unsigned int Server::get_voted_for()
-{
-    return voted_for;
-}
-
-void Server::set_voted_for(const unsigned int voted_for)
-{
-    this->voted_for = voted_for;
-}
-
 void Server::count_vote(const bool vote_granted)
 {
     vote_count += vote_granted;
@@ -54,7 +33,7 @@ void Server::count_vote(const bool vote_granted)
 
 void Server::set_election_timeout()
 {
-    srand(time(0) + get_rank());
+    srand(time(0) + mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD));
 
     begin = chrono::get_time_milliseconds();
 
@@ -70,17 +49,9 @@ bool Server::check_majority()
     return vote_count * 2 >= static_cast<unsigned int>(size);
 }
 
-unsigned int Server::get_rank()
-{
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-    return rank;
-}
-
 void Server::broadcast_request_vote()
 {
-    auto rank = get_rank();
+    auto rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
 
     auto last_log_index = -1;
     auto last_log_term = -1;
@@ -197,7 +168,7 @@ void Server::handle_election_timeout()
     current_term += 1;
 
     // It votes for itself
-    voted_for = get_rank();
+    voted_for = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
     vote_count = 1;
 
     // Broadcast request vote RPC
@@ -252,13 +223,19 @@ void Server::convert_to_leader()
     match_index = std::vector<unsigned int>(size, 0);
 
     // XXX: Debugging information
-    std::cout << "[LEADER] term: " << get_term() << std::endl;
+    std::cout << "[LEADER] term: " << current_term << std::endl;
 
     // XXX: Send empty AppendEntries RPC (heartbeat)
 }
 
 void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
 {
+    if (current_status == ServerStatus::CANDIDATE
+        && rpc.get_term() >= current_term)
+    {
+        convert_to_follower();
+    }
+
     unsigned int last_log_index = get_last_log_index();
     int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
 
@@ -323,6 +300,41 @@ void Server::on_append_entries_response(const rpc::AppendEntriesResponse& rpc)
     }
 }
 
+void Server::on_request_vote_rpc(const rpc::RequestVoteRPC& rpc)
+{
+    auto vote_granted = true;
+
+    if (current_status == ServerStatus::CANDIDATE)
+    {
+        // It already voted for candidate_id
+        // Send RequestVoteResponse with granted_vote = false
+        vote_granted = false;
+    }
+    else if (current_status == ServerStatus::FOLLOWER)
+    {
+        if (voted_for > 0)
+            vote_granted = false;
+        else
+            voted_for = rpc.get_candidate_id();
+    }
+
+    auto response = rpc::RequestVoteResponse(current_term, vote_granted);
+    auto serialized_response = response.serialize();
+
+    MPI_Send(serialized_response.c_str(), serialized_response.length(),
+             MPI_CHAR, rpc.get_candidate_id(), 0, MPI_COMM_WORLD);
+}
+
+void Server::on_request_vote_response(const rpc::RequestVoteResponse& rpc)
+{
+    if (current_status == ServerStatus::CANDIDATE)
+    {
+        vote_count += rpc.get_vote_granted();
+        if (check_majority())
+            convert_to_leader();
+    }
+}
+
 void Server::save_log() const
 {
     int rank;
@@ -334,7 +346,8 @@ void Server::save_log() const
         save_file << entry.get_command() << "\n";
 }
 
-void Server::set_status(ServerStatus status)
+// XXX: For testing purpose
+void Server::set_status(const ServerStatus& server_status)
 {
-    current_status = status;
+    current_status = server_status;
 }

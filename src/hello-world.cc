@@ -5,7 +5,7 @@
 #include "raft/status.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     MPI_Init(&argc, &argv);
 

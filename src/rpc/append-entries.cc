@@ -69,12 +69,6 @@ namespace rpc
 
     void AppendEntriesRPC::apply(Server& server)
     {
-        if (server.get_status() == ServerStatus::CANDIDATE)
-        {
-            if (this->get_term() >= server.get_term())
-                server.convert_to_follower();
-        }
-
         server.on_append_entries_rpc(*this);
     }
 } // namespace rpc

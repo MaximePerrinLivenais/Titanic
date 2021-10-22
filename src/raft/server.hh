@@ -7,7 +7,8 @@
 #include "rpc/append-entries-response.hh"
 #include "rpc/append-entries.hh"
 #include "rpc/log-entry.hh"
-#include "rpc/rpc.hh"
+#include "rpc/request-vote-response.hh"
+#include "rpc/request-vote.hh"
 #include "status.hh"
 
 class Server
@@ -15,28 +16,25 @@ class Server
 public:
     Server();
 
+    // XXX: For testing purpose
+    void set_status(const ServerStatus& server_status);
+
     void run();
-    ServerStatus get_status();
 
     void count_vote(const bool vote_granted);
 
-    unsigned int get_term();
-
     void save_log() const;
 
-    void set_status(ServerStatus status);
-    void on_append_entries_rpc(const rpc::AppendEntriesRPC &rpc);
-    void on_append_entries_response(const rpc::AppendEntriesResponse &rpc);
-
-    unsigned int get_voted_for();
-    void set_voted_for(const unsigned int voted_for);
+    void on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc);
+    void on_append_entries_response(const rpc::AppendEntriesResponse& rpc);
+    void on_request_vote_rpc(const rpc::RequestVoteRPC& rpc);
+    void on_request_vote_response(const rpc::RequestVoteResponse& rpc);
 
     void convert_to_follower();
 
     bool check_majority();
     void convert_to_leader();
 
-    static unsigned int get_rank();
     void broadcast_request_vote();
 
 private:
@@ -45,7 +43,7 @@ private:
 
     void handle_election_timeout();
     void set_election_timeout();
-    void apply_queries(std::vector<rpc::shared_rpc> &queries);
+    void apply_queries(std::vector<rpc::shared_rpc>& queries);
 
     // Server rules
     void update_commit_index();
