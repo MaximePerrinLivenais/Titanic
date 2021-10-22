@@ -213,12 +213,13 @@ void Server::convert_to_leader()
 
 void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
 {
+    unsigned int last_log_index = get_last_log_index();
     int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
 
     // 1. Reply false if term < currentTerm (§5.1)
     if (rpc.get_term() < current_term)
     {
-        rpc::AppendEntriesResponse response(current_term, false, rank);
+        rpc::AppendEntriesResponse response(current_term, false, rank, last_log_index);
         std::string message = response.serialize();
         MPI_Send(message.data(), message.size(), MPI_CHAR, rpc.get_leader_id(),
                 0, MPI_COMM_WORLD);
@@ -243,7 +244,7 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
 
     // 4.  Append any new entries not already in the log
     // XXX: check that entries are not already in the log
-    //log.insert(log.end(), rpc.get_entries().begin(), rpc.get_entries().end());
+    log.insert(log.end(), rpc.get_entries().begin(), rpc.get_entries().end());
 
 
     // 5. If leaderCommit > commitIndex, 
@@ -252,7 +253,7 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
     if (rpc.get_leader_commit_index() > commit_index)
         commit_index = std::min(rpc.get_leader_commit_index(), last_entry);
 
-    rpc::AppendEntriesResponse response(current_term, true, rank);
+    rpc::AppendEntriesResponse response(current_term, true, rank, last_log_index);
     std::string message = response.serialize();
     MPI_Send(message.data(), message.size(), MPI_CHAR, rpc.get_leader_id(),
             0, MPI_COMM_WORLD);
@@ -266,8 +267,8 @@ void Server::on_append_entries_response(const rpc::AppendEntriesResponse& rpc)
         // XXX: last_log_index might changed between the AppendEntries and the response
         // we need the follower to send the index where he stops its log
         // and use rpc.last_log_index instead
-        match_index[follower_index] = get_last_log_index();
-        next_index[follower_index] = match_index[follower_index];
+        match_index[follower_index] = rpc.get_last_log_index();
+        next_index[follower_index] = match_index[follower_index] + 1;
     }
     else
     {
