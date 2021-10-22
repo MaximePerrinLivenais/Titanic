@@ -50,6 +50,16 @@ bool Server::check_majority()
     return vote_count * 2 >= static_cast<unsigned int>(rank);
 }
 
+int Server::get_last_log_index()
+{
+    return log.size() - 1;
+}
+
+void Server::check_leader_rules()
+{
+    return; // FIXME
+}
+
 void Server::handle_election_timeout()
 {
     set_election_timeout();
@@ -128,8 +138,17 @@ void Server::convert_to_follower()
 
 void Server::convert_to_leader()
 {
-    // TODO
     current_status = ServerStatus::LEADER;
+
+    int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
+
+    // For each server, index of the next log entry to send to that server
+    // (initialized to leader last log index + 1)
+    next_index = std::vector<unsigned int>(log.size(), 0);
+
+    // For each server, index of highest log entry known to be replicated on
+    // server (initialized to 0, increases monotonically)
+    match_index = std::vector<unsigned int>(size, 0);
 
     // XXX: Send empty AppendEntries RPC (heartbeat)
 }
@@ -155,7 +174,7 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
 
     // 4.  Append any new entries not already in the log
     // XXX: check that entries are not already in the log
-    log.insert(log.end(), rpc.get_entries().begin(), rpc.get_entries().end());
+    //log.insert(log.end(), rpc.get_entries().begin(), rpc.get_entries().end());
 
 
     // 5. If leaderCommit > commitIndex, 
@@ -163,7 +182,6 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
     unsigned int last_entry = 0;//log.size() - 1;
     if (rpc.get_leader_commit_index() > commit_index)
         commit_index = std::min(rpc.get_leader_commit_index(), last_entry);
-
 }
 
 void Server::save_log() const

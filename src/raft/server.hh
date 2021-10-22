@@ -4,7 +4,6 @@
 #include <queue>
 #include <string>
 
-#include "rpc/rpc.hh"
 #include "rpc/append-entries.hh"
 #include "status.hh"
 
@@ -24,6 +23,9 @@ public:
     void on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc);
 
 private:
+    int get_last_log_index();
+    void check_leader_rules();
+
     void handle_election_timeout();
     void set_election_timeout();
     void apply_queries(std::vector<rpc::RemoteProcedureCall> &queries);

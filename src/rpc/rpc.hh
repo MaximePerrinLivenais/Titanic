@@ -12,8 +12,9 @@ namespace rpc
     enum RPC_TYPE
     {
         REQUEST_VOTE_RPC,
-        REQUEST_VOTE_RESPONSE_RPC,
-        APPEND_ENTRIES_RPC
+        REQUEST_VOTE_RESPONSE,
+        APPEND_ENTRIES_RPC,
+        APPEND_ENTRIES_RESPONSE
     };
 
     class RemoteProcedureCall;

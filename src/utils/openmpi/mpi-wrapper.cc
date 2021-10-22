@@ -65,4 +65,11 @@ namespace mpi
         }
     }
 
+    int MPI_Get_group_comm_size(const MPI_Comm comm)
+    {
+        int size;
+        MPI_Comm_size(comm, &size);
+
+        return size;
+    }
 } // namespace mpi

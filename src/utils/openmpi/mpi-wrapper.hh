@@ -15,4 +15,6 @@ namespace mpi
 
     void MPI_Broadcast(const std::string& message, const int tag,
                         const MPI_Comm comm);
+
+    int MPI_Get_group_comm_size(const MPI_Comm comm);
 }
