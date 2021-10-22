@@ -1,55 +1,34 @@
 #include <iostream>
 
 #include "mpi.h"
+#include "client/client.hh"
 #include "raft/server.hh"
 #include "raft/status.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
 int main(int argc, char *argv[])
 {
-    MPI_Init(&argc, &argv);
-
-    int size;
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
+    int nb_servers = std::stoi(argv[1]);
     int rank;
+
+    MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    char process_name[MPI_MAX_PROCESSOR_NAME];
-    int process_name_len;
-    MPI_Get_processor_name(process_name, &process_name_len);
-
-    std::cout << "Hello world from processor " << process_name << " rank "
-              << rank << " out of " << size << " processors\n";
-
-    Server server;
-    server.set_status(ServerStatus::FOLLOWER);
     if (rank == 0)
     {
-        server.set_status(ServerStatus::LEADER);
-
-        std::vector<rpc::LogEntry> entries = {};
-        rpc::AppendEntriesRPC rpc(0, 0, 0, 0, entries, 0);
-
-        // send RPC
-        std::string message = rpc.serialize();
-        mpi::MPI_Broadcast(message, 0, MPI_COMM_WORLD);
-        MPI_Barrier(MPI_COMM_WORLD);
+        // REPL
+    }
+    else if (rank >= 1 && rank <= nb_servers)
+    {
+        Server server;
+        std::cout << rank << " : I am a server\n";
     }
     else
     {
-        MPI_Barrier(MPI_COMM_WORLD);
-        auto message = mpi::MPI_Listen(MPI_COMM_WORLD);
-        if (message.has_value())
-        {
-            rpc::shared_rpc rpc =
-                rpc::RemoteProcedureCall::deserialize(message.value());
-            rpc->apply(server);
-        }
+        Client client(nb_servers);
+        std::cout << rank << " : I am a client\n";
     }
 
-    std::cout << rank << ": Save log\n";
-    server.save_log();
 
     MPI_Finalize();
 }
