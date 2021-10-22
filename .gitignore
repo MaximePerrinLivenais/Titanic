@@ -1,4 +1,5 @@
 *.o
+*.log
 a.out
 hello
 titanic
