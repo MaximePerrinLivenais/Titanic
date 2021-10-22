@@ -140,7 +140,7 @@ void Server::check_leader_rules()
         if (last_log_index >= next_index[idx])
         {
             // send AppendEntries RPC with log entries starting at nextIndex
-            std::vector<int> entries(
+            std::vector<rpc::LogEntry> entries(
                 log.begin() + next_index[idx],
                 log.end()); // FIXME: check if it is the correct range
 
@@ -181,7 +181,7 @@ void Server::update_commit_index()
             commit_index = n;
 
         // If commit_index and n are equal it means we updated it in the loop
-        updated = commit_index == n;
+        updated = commit_index == (int)n;
     }
 }
 
@@ -294,7 +294,7 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC &rpc)
 
     // 5. If leaderCommit > commitIndex,
     // set commitIndex = min(leaderCommit, index of last new entry
-    unsigned int last_entry = 0; // log.size() - 1;
+    int last_entry = 0; // log.size() - 1;
     if (rpc.get_leader_commit_index() > commit_index)
         commit_index = std::min(rpc.get_leader_commit_index(), last_entry);
 
@@ -331,7 +331,7 @@ void Server::save_log() const
     std::ofstream save_file("server_n" + std::to_string(rank) + ".log");
 
     for (const auto &entry : log)
-        save_file << entry << "\n";
+        save_file << entry.command << "\n";
 }
 
 void Server::set_status(ServerStatus status)

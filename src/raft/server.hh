@@ -13,7 +13,7 @@
 class Server
 {
 public:
-    Server() = default;
+    Server();
 
     void run();
     ServerStatus get_status();

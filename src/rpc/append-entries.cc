@@ -34,7 +34,7 @@ namespace rpc
         serialization["leader_id"] = leader_id;
         serialization["prev_log_index"] = prev_log_index;
         serialization["prev_log_term"] = prev_log_term;
-        serialization["entries"] = entries;
+        // serialization["entries"] = entries;
         serialization["leader_commit_index"] = leader_commit_index;
 
         return serialization;
@@ -60,7 +60,7 @@ namespace rpc
         return prev_log_term;
     }
 
-    unsigned int AppendEntriesRPC::get_leader_commit_index() const
+    int AppendEntriesRPC::get_leader_commit_index() const
     {
         return leader_commit_index;
     }
