@@ -28,19 +28,6 @@ Server::Server()
     reset_timer();
 }
 
-
-void Server::broadcast_request_vote()
-{
-    auto rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
-
-    auto request_vote = rpc::RequestVoteRPC(current_term,
-                                            rank,
-                                            get_last_log_index(),
-                                            get_last_log_term());
-
-    mpi::MPI_Broadcast(request_vote.serialize(), 0, MPI_COMM_WORLD);
-}
-
 void Server::run()
 {
     // XXX: Debugging information
@@ -70,179 +57,17 @@ void Server::run()
     }
 }
 
-void Server::apply_follower_and_candidate_rules()
-{
-    if (chrono::get_time_milliseconds() - begin >= election_timeout)
-        handle_election_timeout();
-}
-
-void Server::apply_leader_rules()
-{
-    if (chrono::get_time_milliseconds() - begin >= heartbeat_time)
-    {
-        begin = chrono::get_time_milliseconds();
-        leader_heartbeat();
-        return;
-    }
-
-    int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
-    int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
-
-    for (int idx = 1; idx < size; idx++)
-    {
-        if (idx == rank)
-            continue;
-
-        unsigned int last_log_index = get_last_log_index();
-
-        // If last log index ≥ nextIndex for a follower
-        if (last_log_index >= next_index[idx])
-        {
-            // send AppendEntries RPC with log entries starting at nextIndex
-            std::vector<rpc::LogEntry> entries(
-                log.begin() + next_index[idx],
-                log.end()); // FIXME: check if it is the correct range
-
-            // XXX: last_log_term = log[last_log_index].term
-            rpc::AppendEntriesRPC rpc(current_term, rank, last_log_index, 0,
-                                      entries, 0);
-            std::string message = rpc.serialize();
-
-            // TODO: use enum RPC instead of dummy tag
-            MPI_Send(message.data(), message.size(), MPI_CHAR, idx, 0,
-                     MPI_COMM_WORLD);
-        }
-    }
-
-    // If there exists an N such that N > commitIndex, a majority of
-    // matchIndex[i] ≥ N, and log[N].term == current Term:set commitIndex = N
-    // (§5.3, §5.4).
-}
-
-void Server::apply_rules()
-{
-    // If commitIndex > lastApplied: increment lastApplied, apply
-    // log[lastApplied] to state machine (§5.3)
-    if (commit_index > last_applied)
-    {
-        last_applied++;
-        // XXX: Apply it
-    }
-}
-
-void Server::leader_heartbeat()
+void Server::save_log() const
 {
     int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
-    int prev_log_index = get_last_log_index();
-    int prev_log_term = get_prev_log_term();
 
-    auto empty_append_entry =
-        rpc::AppendEntriesRPC(current_term, rank, prev_log_index, prev_log_term,
-                              std::vector<rpc::LogEntry>(), commit_index);
+    std::ofstream save_file("server_n" + std::to_string(rank) + ".log");
 
-    auto serialization = empty_append_entry.serialize();
-
-    mpi::MPI_Broadcast(serialization, 0, MPI_COMM_WORLD);
+    for (const auto& entry : log)
+        save_file << entry.get_command() << "\n";
 }
 
-void Server::update_commit_index()
-{
-    int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
-    bool updated = true;
-    while (updated)
-    {
-        unsigned int n = commit_index + 1;
-
-        int count = 0;
-        for (int i = 0; i < size; i++)
-        {
-            if (match_index[i] >= n)
-                count++;
-        }
-
-        // XXX: get real number of servers to check majority
-        // check next_index.size()
-        if (2 * count > size)
-            commit_index = n;
-
-        // If commit_index and n are equal it means we updated it in the loop
-        updated = commit_index == (int)n;
-    }
-}
-
-void Server::handle_election_timeout()
-{
-    // XXX: Debugging information
-    std::cout << "[ELECTION] Starting an election" << std::endl;
-
-    reset_timer();
-
-    current_status = ServerStatus::CANDIDATE;
-
-    current_term += 1;
-
-    // It votes for itself
-    voted_for = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
-    vote_count = 1;
-
-    // Broadcast request vote RPC
-    broadcast_request_vote();
-
-    // Check queries
-    //
-    // for each query
-    // - if Request vote RPC
-    //     count vote with vote_granted
-    // - if Apprend entries RPC
-    //     if its term is >= of our current term, then it becomes a
-    //     follower.
-    // if vote_count has the majority of node
-    //     - convert to leader
-    // check if election_timeout is over
-    //     - handle_election_timeout once again
-}
-
-void Server::apply_query(rpc::shared_rpc query)
-{
-    if (query->get_term() > current_term)
-    {
-        current_term = query->get_term();
-        convert_to_follower();
-    }
-
-    query->apply(*this);
-}
-
-void Server::convert_to_follower()
-{
-    current_status = ServerStatus::FOLLOWER;
-    voted_for = 0;
-
-    // Reset timeout
-    reset_timer();
-}
-
-void Server::convert_to_leader()
-{
-    current_status = ServerStatus::LEADER;
-    voted_for = 0;
-
-    int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
-
-    // For each server, index of the next log entry to send to that server
-    // (initialized to leader last log index + 1)
-    next_index = std::vector<unsigned int>(size, log.size());
-
-    // For each server, index of highest log entry known to be replicated on
-    // server (initialized to 0, increases monotonically)
-    match_index = std::vector<unsigned int>(size, 0);
-
-    // XXX: Debugging information
-    std::cout << "[LEADER] term: " << current_term << std::endl;
-
-    // Send empty AppendEntries RPC (heartbeat)
-    leader_heartbeat();
-}
+/* ------------ Server reactions functions according to RPC type ------------ */
 
 void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
 {
@@ -358,6 +183,138 @@ void Server::on_request_vote_response(const rpc::RequestVoteResponse& rpc)
     }
 }
 
+/* ------------------------------ Server rules ------------------------------ */
+
+void Server::apply_rules()
+{
+    // If commitIndex > lastApplied: increment lastApplied, apply
+    // log[lastApplied] to state machine (§5.3)
+    if (commit_index > last_applied)
+    {
+        last_applied++;
+        // XXX: Apply it
+    }
+}
+
+void Server::apply_follower_and_candidate_rules()
+{
+    if (chrono::get_time_milliseconds() - begin >= election_timeout)
+        handle_election_timeout();
+}
+
+void Server::apply_leader_rules()
+{
+    if (chrono::get_time_milliseconds() - begin >= heartbeat_time)
+    {
+        begin = chrono::get_time_milliseconds();
+        leader_heartbeat();
+        return;
+    }
+
+    int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
+    int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
+
+    for (int idx = 1; idx < size; idx++)
+    {
+        if (idx == rank)
+            continue;
+
+        unsigned int last_log_index = get_last_log_index();
+
+        // If last log index ≥ nextIndex for a follower
+        if (last_log_index >= next_index[idx])
+        {
+            // send AppendEntries RPC with log entries starting at nextIndex
+            std::vector<rpc::LogEntry> entries(
+                log.begin() + next_index[idx],
+                log.end()); // FIXME: check if it is the correct range
+
+            // XXX: last_log_term = log[last_log_index].term
+            rpc::AppendEntriesRPC rpc(current_term, rank, last_log_index, 0,
+                                      entries, 0);
+            std::string message = rpc.serialize();
+
+            // TODO: use enum RPC instead of dummy tag
+            MPI_Send(message.data(), message.size(), MPI_CHAR, idx, 0,
+                     MPI_COMM_WORLD);
+        }
+    }
+
+    // If there exists an N such that N > commitIndex, a majority of
+    // matchIndex[i] ≥ N, and log[N].term == current Term:set commitIndex = N
+    // (§5.3, §5.4).
+}
+
+/* ---------------------- Useful auxialiary functions ---------------------- */
+
+void Server::apply_query(rpc::shared_rpc query)
+{
+    if (query->get_term() > current_term)
+    {
+        current_term = query->get_term();
+        convert_to_follower();
+    }
+
+    query->apply(*this);
+}
+
+void Server::update_commit_index()
+{
+    int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
+    bool updated = true;
+    while (updated)
+    {
+        unsigned int n = commit_index + 1;
+
+        int count = 0;
+        for (int i = 0; i < size; i++)
+        {
+            if (match_index[i] >= n)
+                count++;
+        }
+
+        // XXX: get real number of servers to check majority
+        // check next_index.size()
+        if (2 * count > size)
+            commit_index = n;
+
+        // If commit_index and n are equal it means we updated it in the loop
+        updated = commit_index == (int)n;
+    }
+}
+
+void Server::handle_election_timeout()
+{
+    // XXX: Debugging information
+    std::cout << "[ELECTION] Starting an election" << std::endl;
+
+    reset_timer();
+
+    current_status = ServerStatus::CANDIDATE;
+
+    current_term += 1;
+
+    // It votes for itself
+    voted_for = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
+    vote_count = 1;
+
+    // Broadcast request vote RPC
+    broadcast_request_vote();
+
+    // Check queries
+    //
+    // for each query
+    // - if Request vote RPC
+    //     count vote with vote_granted
+    // - if Apprend entries RPC
+    //     if its term is >= of our current term, then it becomes a
+    //     follower.
+    // if vote_count has the majority of node
+    //     - convert to leader
+    // check if election_timeout is over
+    //     - handle_election_timeout once again
+}
+
 void Server::reset_timer()
 {
     srand(time(0) + mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD));
@@ -368,16 +325,6 @@ void Server::reset_timer()
     election_timeout = std::rand() % (range) + MIN_TIMEOUT_MILLI;
 }
 
-void Server::save_log() const
-{
-    int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
-
-    std::ofstream save_file("server_n" + std::to_string(rank) + ".log");
-
-    for (const auto& entry : log)
-        save_file << entry.get_command() << "\n";
-}
-
 bool Server::check_majority()
 {
     int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
@@ -385,7 +332,69 @@ bool Server::check_majority()
     return vote_count * 2 >= static_cast<unsigned int>(size);
 }
 
-// Useful getters
+/* -------------------------------- Messages -------------------------------- */
+
+void Server::broadcast_request_vote()
+{
+    auto rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
+
+    auto request_vote = rpc::RequestVoteRPC(current_term,
+                                            rank,
+                                            get_last_log_index(),
+                                            get_last_log_term());
+
+    mpi::MPI_Broadcast(request_vote.serialize(), 0, MPI_COMM_WORLD);
+}
+
+void Server::leader_heartbeat()
+{
+    int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
+    int prev_log_index = get_last_log_index();
+    int prev_log_term = get_prev_log_term();
+
+    auto empty_append_entry =
+        rpc::AppendEntriesRPC(current_term, rank, prev_log_index, prev_log_term,
+                              std::vector<rpc::LogEntry>(), commit_index);
+
+    auto serialization = empty_append_entry.serialize();
+
+    mpi::MPI_Broadcast(serialization, 0, MPI_COMM_WORLD);
+}
+
+/* ---------------------- Status conversion functions ---------------------- */
+
+void Server::convert_to_follower()
+{
+    current_status = ServerStatus::FOLLOWER;
+    voted_for = 0;
+
+    // Reset timeout
+    reset_timer();
+}
+
+void Server::convert_to_leader()
+{
+    current_status = ServerStatus::LEADER;
+    voted_for = 0;
+
+    int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
+
+    // For each server, index of the next log entry to send to that server
+    // (initialized to leader last log index + 1)
+    next_index = std::vector<unsigned int>(size, log.size());
+
+    // For each server, index of highest log entry known to be replicated on
+    // server (initialized to 0, increases monotonically)
+    match_index = std::vector<unsigned int>(size, 0);
+
+    // XXX: Debugging information
+    std::cout << "[LEADER] term: " << current_term << std::endl;
+
+    // Send empty AppendEntries RPC (heartbeat)
+    leader_heartbeat();
+}
+
+/* ----------------------------- Useful getters ----------------------------- */
 
 int Server::get_last_log_index()
 {
