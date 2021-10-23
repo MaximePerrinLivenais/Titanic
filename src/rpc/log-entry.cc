@@ -2,7 +2,7 @@
 
 namespace rpc
 {
-    LogEntry::LogEntry(const std::string command, const int term)
+    LogEntry::LogEntry(const int term, const std::string command)
         : term(term)
         , command(command)
     {}
@@ -18,7 +18,7 @@ namespace rpc
         serialization["term"] = term;
         serialization["command"] = command;
 
-        return serialization.dump(4);
+        return serialization.dump();
     }
 
     std::vector<LogEntry> LogEntry::serialize(const json& json_obj)
@@ -39,5 +39,11 @@ namespace rpc
     std::string LogEntry::get_command() const
     {
         return command;
+    }
+
+    void to_json(json& json_obj, const LogEntry& log_entry)
+    {
+        json_obj = json{ { "term", log_entry.get_term() },
+                         { "command", log_entry.get_command() } };
     }
 } // namespace rpc

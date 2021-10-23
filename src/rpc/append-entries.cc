@@ -35,9 +35,10 @@ namespace rpc
         serialization["prev_log_term"] = prev_log_term;
         serialization["leader_commit_index"] = leader_commit_index;
 
-        serialization["entries"] = json::array();
-        for (const auto& entry : entries)
-            serialization["entries"].push_back(entry.serialize());
+        serialization["entries"] = entries;
+
+        // std::cout << "ENTRIES => " << serialization["entries"].dump(4)
+        //          << std::endl;
 
         return serialization;
     }

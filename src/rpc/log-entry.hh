@@ -11,7 +11,7 @@ namespace rpc
     {
     public:
         LogEntry() = default;
-        explicit LogEntry(const std::string command, const int term);
+        explicit LogEntry(const int term, const std::string command);
         explicit LogEntry(const json& json_obj);
 
         const std::string serialize() const;
@@ -24,4 +24,6 @@ namespace rpc
         unsigned int term;
         std::string command;
     };
+
+    void to_json(json& json_obj, const LogEntry& log_entry);
 } // namespace rpc
