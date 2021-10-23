@@ -10,4 +10,21 @@ namespace client
     }
 
 
+    ClientRequest::ClientRequest(const json& json_obj):
+        ClientRequest(json_obj["command"], json_obj["serial_number"], json_obj["client_index"])
+    {
+    }
+
+
+    json ClientRequest::serialize_json() const
+    {
+        json serialization = json();
+
+        serialization["command"] = command;
+        serialization["serial_number"] = serial_number;
+        serialization["client_index"] = client_index;
+
+        return serialization;
+    }
+
 }

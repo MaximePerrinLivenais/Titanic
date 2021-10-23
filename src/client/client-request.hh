@@ -9,12 +9,15 @@ namespace client
     struct ClientRequest : public rpc::RemoteProcedureCall
     {
     public:
-        ClientRequest(const std::string& command,
+        explicit ClientRequest(const std::string& command,
                 const std::string& serial_number, unsigned int client_index);
+        explicit ClientRequest(const json& json_obj);
 
 
 
     private:
+        json serialize_json() const;
+
         const std::string command;
         const std::string serial_number;
         const unsigned int client_index;
