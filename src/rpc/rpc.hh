@@ -11,6 +11,7 @@ namespace rpc
 {
     enum RPC_TYPE
     {
+        CLIENT_REQUEST,
         REQUEST_VOTE_RPC,
         REQUEST_VOTE_RESPONSE,
         APPEND_ENTRIES_RPC,

@@ -1,19 +1,18 @@
 #pragma once
 
 #include <string>
+#include "rpc/rpc.hh"
 
+// XXX: maybe put this in rpc
 namespace client
 {
-    class ClientRequest
+    struct ClientRequest : public rpc::RemoteProcedureCall
     {
     public:
         ClientRequest(const std::string& command,
                 const std::string& serial_number, unsigned int client_index);
 
 
-        std::string get_command() const;
-        std::string get_serial_number() const;
-        unsigned int get_client_index() const;
 
     private:
         const std::string command;
