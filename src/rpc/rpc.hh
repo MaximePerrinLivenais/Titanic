@@ -36,7 +36,7 @@ namespace rpc
 
         void apply_message(Server& server);
 
-        virtual ~RemoteProcedureCall() = default;
+        // virtual ~RemoteProcedureCall() = default;
 
     private:
         virtual json serialize_json() const = 0;
