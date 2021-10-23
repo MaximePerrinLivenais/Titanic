@@ -22,7 +22,16 @@ int main(int argc, char* argv[])
     std::cout << "Hello world from processor " << process_name << " rank "
               << rank << " out of " << size << " processors\n";
 
+    if (rank == 0)
+    {
+        while (true)
+        {}
+    }
+
     Server server;
+    server.run();
+
+    // ---
     server.set_status(ServerStatus::FOLLOWER);
     if (rank == 0)
     {
