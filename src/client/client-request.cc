@@ -1,4 +1,5 @@
 #include "client-request.hh"
+#include "raft/server.hh"
 
 namespace client
 {
@@ -29,8 +30,7 @@ namespace client
 
     void ClientRequest::apply(Server &server)
     {
-        (void)server;
-        throw std::logic_error("Function not yet implemented");
+        server.on_client_request(*this);
     }
 
 }

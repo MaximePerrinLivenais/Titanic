@@ -8,6 +8,7 @@
 #include "rpc/append-entries.hh"
 #include "rpc/log-entry.hh"
 #include "rpc/rpc.hh"
+#include "client/client-request.hh"
 #include "status.hh"
 
 class Server
@@ -27,6 +28,7 @@ public:
     void set_status(ServerStatus status);
     void on_append_entries_rpc(const rpc::AppendEntriesRPC &rpc);
     void on_append_entries_response(const rpc::AppendEntriesResponse &rpc);
+    void on_client_request(const client::ClientRequest& request);
 
     unsigned int get_voted_for();
     void set_voted_for(const unsigned int voted_for);

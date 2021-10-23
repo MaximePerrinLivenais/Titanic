@@ -6,6 +6,15 @@
 // XXX: maybe put this in rpc
 namespace client
 {
+
+    // XXX: maybe thinks about hierarchy of different messages
+    //
+    //          - REPL
+    //         |
+    // Message - RPC -> Append, Request, ....
+    //         |
+    //          - Client message
+    //
     struct ClientRequest : public rpc::RemoteProcedureCall
     {
     public:

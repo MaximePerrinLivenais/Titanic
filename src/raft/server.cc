@@ -323,6 +323,23 @@ void Server::on_append_entries_response(const rpc::AppendEntriesResponse &rpc)
     }
 }
 
+void Server::on_client_request(const client::ClientRequest& request)
+{
+    // XXX: what if not leader are yet elected
+    if (get_status() != ServerStatus::LEADER)
+    {
+        // send back message
+        (void)request;
+    }
+    else
+    {
+        // handle request, send appendentries to follower etc ...
+        (void)request;
+    }
+
+}
+
+
 void Server::save_log() const
 {
     int rank;
