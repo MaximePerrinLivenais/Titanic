@@ -52,12 +52,12 @@ namespace rpc
         return leader_id;
     }
 
-    unsigned int AppendEntriesRPC::get_prev_log_index() const
+    int AppendEntriesRPC::get_prev_log_index() const
     {
         return prev_log_index;
     }
 
-    unsigned int AppendEntriesRPC::get_prev_log_term() const
+    int AppendEntriesRPC::get_prev_log_term() const
     {
         return prev_log_term;
     }

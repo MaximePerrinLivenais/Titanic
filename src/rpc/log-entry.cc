@@ -2,7 +2,7 @@
 
 namespace rpc
 {
-    LogEntry::LogEntry(const std::string command, const unsigned int term)
+    LogEntry::LogEntry(const std::string command, const int term)
         : term(term)
         , command(command)
     {}
@@ -31,7 +31,7 @@ namespace rpc
         return entries;
     }
 
-    unsigned int LogEntry::get_term() const
+    int LogEntry::get_term() const
     {
         return term;
     }

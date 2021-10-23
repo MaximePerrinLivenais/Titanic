@@ -42,7 +42,8 @@ void Server::run()
             // XXX: Debugging information
             // std::cout << "Receive: " << query_str_opt.value() << std::endl;
 
-            begin = chrono::get_time_milliseconds();
+            if (current_status != ServerStatus::LEADER)
+                begin = chrono::get_time_milliseconds();
 
             auto query =
                 rpc::RemoteProcedureCall::deserialize(query_str_opt.value());
@@ -52,11 +53,10 @@ void Server::run()
             query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
         }
 
-        // if (current_status == ServerStatus::LEADER)
-        //    apply_leader_rules();
-        // else
-        if (current_status == ServerStatus::CANDIDATE
-            || current_status == ServerStatus::FOLLOWER)
+        if (current_status == ServerStatus::LEADER)
+            apply_leader_rules();
+        else if (current_status == ServerStatus::CANDIDATE
+                 || current_status == ServerStatus::FOLLOWER)
             apply_follower_and_candidate_rules();
     }
 }
@@ -98,7 +98,8 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
     // 2. Reply false if log doesn’t contain an entry at prevLogIndex whose term
     // matches prevLogTerm (§5.3)
     // XXX: log[prev_log_index].term
-    if (log[rpc.get_prev_log_index()].get_term() != rpc.get_prev_log_term())
+    if (get_term_at_prev_log_index(rpc.get_prev_log_index())
+        != rpc.get_prev_log_term())
     {
         rpc::AppendEntriesResponse response(current_term, false, rank,
                                             get_last_log_index());
@@ -247,7 +248,7 @@ void Server::apply_leader_rules()
         if (idx == rank)
             continue;
 
-        unsigned int last_log_index = get_last_log_index();
+        int last_log_index = get_last_log_index();
         int prev_log_index = get_prev_log_index(idx);
         int prev_log_term = get_prev_log_term(idx);
 
@@ -296,7 +297,7 @@ void Server::update_commit_index()
     bool updated = true;
     while (updated)
     {
-        unsigned int n = commit_index + 1;
+        int n = commit_index + 1;
 
         int count = 0;
         for (int i = 0; i < size; i++)
@@ -373,6 +374,9 @@ void Server::leader_heartbeat()
     int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
     int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
 
+    std::cout << "[HEARTBEAT] from leader " << rank
+              << "------------------------------" << std::endl;
+
     for (int follower_rank = 1; follower_rank < size; follower_rank++)
     {
         if (follower_rank == rank)
@@ -413,11 +417,11 @@ void Server::convert_to_leader()
 
     // For each server, index of the next log entry to send to that server
     // (initialized to leader last log index + 1)
-    next_index = std::vector<unsigned int>(size, log.size());
+    next_index = std::vector<int>(size, log.size());
 
     // For each server, index of highest log entry known to be replicated on
     // server (initialized to 0, increases monotonically)
-    match_index = std::vector<unsigned int>(size, 0);
+    match_index = std::vector<int>(size, 0);
 
     // XXX: Debugging information
     std::cout << "[LEADER] term : " << current_term << ", rank : " << rank
@@ -453,6 +457,14 @@ int Server::get_prev_log_term(unsigned int rank)
 
     // XXX: Decide if we want to return 0 as first term or -1
     return index >= 0 ? log[index].get_term() : -1;
+}
+
+int Server::get_term_at_prev_log_index(int prev_log_index)
+{
+    if (prev_log_index < 0)
+        return -1;
+
+    return log[prev_log_index].get_term();
 }
 
 // XXX: For testing purpose

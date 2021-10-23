@@ -56,6 +56,7 @@ private:
     int get_last_log_term();
     int get_prev_log_index(unsigned int rank);
     int get_prev_log_term(unsigned int rank);
+    int get_term_at_prev_log_index(int prev_log_index);
 
     /* ----------- Attributes ----------- */
 
@@ -78,6 +79,6 @@ private:
     int last_applied;
 
     // Leader
-    std::vector<unsigned int> next_index;
-    std::vector<unsigned int> match_index;
+    std::vector<int> next_index;
+    std::vector<int> match_index;
 };
