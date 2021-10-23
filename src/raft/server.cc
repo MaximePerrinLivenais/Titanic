@@ -40,16 +40,10 @@ void Server::broadcast_request_vote()
 {
     auto rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
 
-    auto last_log_index = -1;
-    auto last_log_term = -1;
-    if (!log.empty())
-    {
-        last_log_index = log.back().get_term();
-        last_log_term = log.size() - 1;
-    }
-
-    auto request_vote =
-        rpc::RequestVoteRPC(current_term, rank, last_log_index, last_log_term);
+    auto request_vote = rpc::RequestVoteRPC(current_term,
+                                            rank,
+                                            get_last_log_index(),
+                                            get_last_log_term());
 
     mpi::MPI_Broadcast(request_vote.serialize(), 0, MPI_COMM_WORLD);
 }
@@ -391,9 +385,16 @@ void Server::save_log() const
         save_file << entry.get_command() << "\n";
 }
 
+// Useful getters
+
 int Server::get_last_log_index()
 {
     return log.size() - 1;
+}
+
+int Server::get_last_log_term()
+{
+    return log.empty() ? -1 : log.back().get_term();
 }
 
 int Server::get_prev_log_index()

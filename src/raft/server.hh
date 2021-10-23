@@ -34,10 +34,6 @@ private:
     void convert_to_follower();
     void convert_to_leader();
 
-    int get_last_log_index();
-    int get_prev_log_index();
-    int get_prev_log_term();
-
     void apply_follower_and_candidate_rules();
     void apply_leader_rules();
     void apply_rules();
@@ -52,6 +48,12 @@ private:
     // Messages
     void broadcast_request_vote();
     void leader_heartbeat();
+
+    // Useful getters
+    int get_last_log_index();
+    int get_last_log_term();
+    int get_prev_log_index();
+    int get_prev_log_term();
 
     // ----------- Attributes -----------
 
