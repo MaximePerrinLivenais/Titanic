@@ -38,7 +38,7 @@ namespace repl
         case SPEED:
             abort();
         case CRASH:
-            return std::make_shared<RequestCrashREPL>();
+            return std::make_shared<RequestCrashREPL>(json_obj);
         case START:
             abort();
         }

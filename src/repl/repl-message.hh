@@ -31,6 +31,8 @@ namespace repl
 
         void apply_message(Server& server);
 
+        virtual void send() = 0;
+
     protected:
         virtual json serialize_json() const = 0;
         virtual void apply(Server& server) = 0;
