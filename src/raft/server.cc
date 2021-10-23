@@ -28,13 +28,6 @@ Server::Server()
     reset_timer();
 }
 
-bool Server::check_majority()
-{
-    int size;
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-    return vote_count * 2 >= static_cast<unsigned int>(size);
-}
 
 void Server::broadcast_request_vote()
 {
@@ -383,6 +376,13 @@ void Server::save_log() const
 
     for (const auto& entry : log)
         save_file << entry.get_command() << "\n";
+}
+
+bool Server::check_majority()
+{
+    int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
+
+    return vote_count * 2 >= static_cast<unsigned int>(size);
 }
 
 // Useful getters

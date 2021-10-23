@@ -28,7 +28,6 @@ public:
     void on_request_vote_rpc(const rpc::RequestVoteRPC& rpc);
     void on_request_vote_response(const rpc::RequestVoteResponse& rpc);
 
-    bool check_majority();
 
 private:
     void convert_to_follower();
@@ -48,6 +47,8 @@ private:
     // Messages
     void broadcast_request_vote();
     void leader_heartbeat();
+
+    bool check_majority();
 
     // Useful getters
     int get_last_log_index();
