@@ -15,6 +15,7 @@ RPC = \
 
 CLIENT = \
          src/client/client.cc \
+         src/client/client-request.cc \
          $(NULL)
 
 
