@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        Client client(nb_servers);
+        Client client(nb_servers, rank);
         std::cout << rank << " : I am a client\n";
     }
 
