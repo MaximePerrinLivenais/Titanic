@@ -15,7 +15,7 @@ namespace client
     //         |
     //          - Client message
     //
-    struct ClientRequest : public rpc::RemoteProcedureCall
+    class ClientRequest : public rpc::RemoteProcedureCall
     {
     public:
         explicit ClientRequest(const std::string& command,
