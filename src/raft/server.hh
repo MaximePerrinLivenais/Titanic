@@ -54,8 +54,8 @@ private:
     // Useful getters
     int get_last_log_index();
     int get_last_log_term();
-    int get_prev_log_index();
-    int get_prev_log_term();
+    int get_prev_log_index(unsigned int rank);
+    int get_prev_log_term(unsigned int rank);
 
     /* ----------- Attributes ----------- */
 
