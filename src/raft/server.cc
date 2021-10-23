@@ -352,9 +352,9 @@ void Server::reset_timer()
 
 bool Server::check_majority()
 {
-    int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
+    unsigned int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
 
-    return vote_count * 2 >= static_cast<unsigned int>(size);
+    return vote_count * 2 > size;
 }
 
 /* -------------------------------- Messages -------------------------------- */
