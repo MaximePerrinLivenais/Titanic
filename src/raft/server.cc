@@ -280,7 +280,9 @@ void Server::apply_leader_rules()
 void Server::set_current_term(const int current_term)
 {
     this->current_term = current_term;
+
     begin = chrono::get_time_milliseconds();
+    reset_election_timeout();
 }
 
 void Server::apply_query(rpc::shared_rpc query)
@@ -337,7 +339,6 @@ void Server::convert_to_candidate()
     current_status = ServerStatus::CANDIDATE;
 
     set_current_term(current_term + 1);
-    reset_election_timeout();
 
     voted_for = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
     vote_count = 1;
@@ -406,6 +407,7 @@ void Server::convert_to_follower()
     current_status = ServerStatus::FOLLOWER;
     voted_for = 0;
 
+    begin = chrono::get_time_milliseconds();
     reset_election_timeout();
 }
 
