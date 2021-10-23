@@ -10,7 +10,7 @@ namespace repl
 
     json RequestCrashREPL::serialize_json() const
     {
-        return json();
+        return ReplMsg::serialize_json();
     }
 
     void RequestCrashREPL::apply(Server& server)

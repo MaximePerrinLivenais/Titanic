@@ -27,12 +27,14 @@ namespace message
 
         MSG_TYPE get_msg_type() const;
 
-        virtual const std::string serialize() const = 0;
+        virtual const std::string serialize() const;
         static shared_msg deserialize(const std::string& message);
 
         virtual void apply_message(Server& server) = 0;
 
     private:
+        virtual json serialize_json() const = 0;
+
         const MSG_TYPE msg_type;
     };
 } // namespace message

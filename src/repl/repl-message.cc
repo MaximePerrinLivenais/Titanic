@@ -1,5 +1,10 @@
 #include "repl-message.hh"
 
+#include "request-crash-repl.hh"
+
+// TODO remove header
+#include <iostream>
+
 namespace repl
 {
     ReplMsg::ReplMsg(const REPL_MSG_TYPE repl_type)
@@ -9,19 +14,20 @@ namespace repl
 
     void ReplMsg::apply_message(Server& server)
     {
+        std::cout << "I apply a repl message\n";
         this->apply(server);
     }
 
-    const std::string ReplMsg::serialize() const
+    json ReplMsg::serialize_json() const
     {
-        json serialization = this->serialize_json();
+        json serialization = json();
 
         serialization["repl_msg_type"] = repl_msg_type;
 
-        return serialization.dump(4);
+        return serialization;
     }
 
-    static shared_repl_msg deserialize(const std::string& message)
+    shared_repl_msg ReplMsg::deserialize(const std::string& message)
     {
         auto json_obj = json::parse(message);
         auto repl_msg_type = json_obj["repl_msg_type"].get<REPL_MSG_TYPE>();
@@ -32,7 +38,7 @@ namespace repl
         case SPEED:
             abort();
         case CRASH:
-            abort();
+            return std::make_shared<RequestCrashREPL>();
         case START:
             abort();
         }

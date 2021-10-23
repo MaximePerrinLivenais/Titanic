@@ -31,14 +31,14 @@ namespace rpc
         unsigned int get_term() const;
         RPC_TYPE get_rpc_type() const;
 
-        const std::string serialize() const;
+        // const std::string serialize() const;
         static shared_rpc deserialize(const std::string& message);
 
         void apply_message(Server& server);
 
         // virtual ~RemoteProcedureCall() = default;
 
-    private:
+    protected:
         virtual json serialize_json() const = 0;
         virtual void apply(Server& server) = 0;
 

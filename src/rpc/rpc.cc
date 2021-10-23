@@ -19,19 +19,35 @@ namespace rpc
         , rpc_type(rpc_type)
     {}
 
-    const std::string RemoteProcedureCall::serialize() const
+    json RemoteProcedureCall::serialize_json() const
     {
-        json serialization = this->serialize_json();
+        json serialization = json();
 
         serialization["term"] = term;
         serialization["rpc_type"] = rpc_type;
 
-        return serialization.dump(4);
+        return serialization;
     }
+
+    // const std::string RemoteProcedureCall::serialize() const
+    // {
+    //     json serialization = this->serialize_json();
+
+    //     serialization["term"] = term;
+    //     serialization["rpc_type"] = rpc_type;
+
+    //     return serialization.dump(4);
+    // }
     void RemoteProcedureCall::apply_message(Server& server)
     {
         if (server.get_status() == CRASHED)
             return;
+
+        if (this->get_term() > server.current_term)
+        {
+            server.current_term = this->get_term();
+            server.convert_to_follower();
+        }
 
         this->apply(server);
     }

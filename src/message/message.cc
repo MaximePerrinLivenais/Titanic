@@ -1,5 +1,8 @@
 #include "message.hh"
 
+#include <iostream>
+
+#include "repl/repl-message.hh"
 #include "rpc/rpc.hh"
 
 namespace message
@@ -13,7 +16,16 @@ namespace message
         return msg_type;
     }
 
-    shared_msg deserialize(const std::string& message)
+    const std::string Message::serialize() const
+    {
+        json serialization = this->serialize_json();
+
+        serialization["msg_type"] = msg_type;
+
+        return serialization.dump(4);
+    }
+
+    shared_msg Message::deserialize(const std::string& message)
     {
         auto json_obj = json::parse(message);
         auto msg_type = json_obj["msg_type"].get<MSG_TYPE>();
@@ -25,7 +37,8 @@ namespace message
             // times Maybe give the object `json` to deserialize.
             return rpc::RemoteProcedureCall::deserialize(message);
         case REPL_MESSAGE:
-            abort(); // FIXME
+            std::cout << "Message: " << message << std::endl;
+            return repl::ReplMsg::deserialize(message);
         }
     }
 

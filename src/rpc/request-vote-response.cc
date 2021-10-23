@@ -27,7 +27,7 @@ bool RequestVoteResponse::get_vote_granted() const
 
 json RequestVoteResponse::serialize_json() const
 {
-    json serialization = json();
+    json serialization = RemoteProcedureCall::serialize_json();
 
     serialization["vote_granted"] = vote_granted;
     serialization["term"] = get_term();

@@ -45,6 +45,8 @@ public:
     bool check_majority();
 
 private:
+    friend class rpc::RemoteProcedureCall;
+
     void convert_to_follower();
     void convert_to_leader();
 

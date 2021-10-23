@@ -8,6 +8,7 @@ RPC = \
 	src/message/message.cc \
 	src/repl/repl-message.cc \
 	src/repl/request-crash-repl.cc \
+	src/repl/repl.cc \
         src/rpc/append-entries.cc \
         src/rpc/append-entries-response.cc \
         src/rpc/request-vote.cc \

@@ -28,7 +28,7 @@ namespace rpc
 
     json AppendEntriesRPC::serialize_json() const
     {
-        json serialization = json();
+        json serialization = RemoteProcedureCall::serialize_json();
 
         serialization["leader_id"] = leader_id;
         serialization["prev_log_index"] = prev_log_index;

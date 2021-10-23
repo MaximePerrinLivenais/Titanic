@@ -57,7 +57,7 @@ void Server::broadcast_request_vote()
 void Server::run()
 {
     // XXX: Debugging information
-    std::cout << "[RUNNING] Server" << std::endl;
+    // std::cout << "[RUNNING] Server" << std::endl;
     while (true)
     {
         auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
@@ -69,17 +69,25 @@ void Server::run()
             reset_timer();
 
             // TODO here we can deserialize direclty in message
-            auto query =
-                rpc::RemoteProcedureCall::deserialize(query_str_opt.value());
+            // auto query =
+            // rpc::RemoteProcedureCall::deserialize(query_str_opt.value());
+
+            auto query = message::Message::deserialize(query_str_opt.value());
 
             // XXX
             // here call apply_message
             // In the case of rpc -> do the same as apply_query
             // In the case of repl -> apply directly
-            apply_query(query);
+            // apply_query(query);
+            query->apply_message(*this);
+
+            // std::cout << "My status is: " << current_status << std::endl;
 
             query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
         }
+
+        if (current_status == ServerStatus::CRASHED)
+            continue;
 
         if (current_status == ServerStatus::LEADER)
             apply_leader_rules();
@@ -191,7 +199,9 @@ void Server::update_commit_index()
 void Server::handle_election_timeout()
 {
     // XXX: Debugging information
-    std::cout << "[ELECTION] Starting an election" << std::endl;
+    int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
+    std::cout << "[ELECTION] " << rank << " is Starting an election"
+              << std::endl;
 
     reset_timer();
 
@@ -221,16 +231,16 @@ void Server::handle_election_timeout()
 }
 
 // TODO refacto this function since it breaks the apply_message principle
-void Server::apply_query(rpc::shared_rpc query)
-{
-    if (query->get_term() > current_term)
-    {
-        current_term = query->get_term();
-        convert_to_follower();
-    }
+// void Server::apply_query(rpc::shared_rpc query)
+// {
+//     if (query->get_term() > current_term)
+//     {
+//         current_term = query->get_term();
+//         convert_to_follower();
+//     }
 
-    query->apply_message(*this);
-}
+//     query->apply_message(*this);
+// }
 
 void Server::convert_to_follower()
 {
@@ -258,6 +268,9 @@ void Server::convert_to_leader()
 
     // XXX: Debugging information
     std::cout << "[LEADER] term: " << current_term << std::endl;
+
+    int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
+    std::cout << "[LEADER] rank: " << rank << std::endl;
 
     // Send empty AppendEntries RPC (heartbeat)
     leader_heartbeat();
