@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     server.run();
 
     // ---
-    server.set_status(ServerStatus::FOLLOWER);
+    /*server.set_status(ServerStatus::FOLLOWER);
     if (rank == 0)
     {
         server.set_status(ServerStatus::LEADER);
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
     }
 
     std::cout << rank << ": Save log\n";
-    server.save_log();
+    server.save_log();*/
 
     MPI_Finalize();
 }

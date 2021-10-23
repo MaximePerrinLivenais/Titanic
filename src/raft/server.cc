@@ -50,6 +50,8 @@ void Server::run()
             query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
         }
 
+        save_log();
+
         if (current_status == ServerStatus::LEADER)
             apply_leader_rules();
         else if (current_status == ServerStatus::CANDIDATE
@@ -62,10 +64,16 @@ void Server::save_log() const
 {
     int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
 
+    // TODO: Check if it is open
     std::ofstream save_file("server_n" + std::to_string(rank) + ".log");
+    if (!save_file.is_open())
+        std::cout << "[ERROR] Cannot open log file\n";
 
     for (const auto& entry : log)
-        save_file << entry.get_command() << "\n";
+        save_file << entry.get_command() << std::endl;
+
+    save_file.flush();
+    save_file.close();
 }
 
 /* ------------ Server reactions functions according to RPC type ------------ */
@@ -234,6 +242,12 @@ void Server::apply_leader_rules()
     {
         begin = chrono::get_time_milliseconds();
         leader_heartbeat();
+
+        auto log_entry =
+            rpc::LogEntry(current_term,
+                          "term = " + std::to_string(current_term)
+                              + ", time = " + std::to_string(begin));
+        log.push_back(log_entry);
         return;
     }
 

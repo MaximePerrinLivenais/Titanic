@@ -1,5 +1,7 @@
 #include "rpc/append-entries.hh"
 
+#include <iostream>
+
 #include "exception/follower_exception.hh"
 #include "raft/server.hh"
 
