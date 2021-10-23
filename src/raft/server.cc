@@ -8,6 +8,7 @@
 #include <mpi.h>
 #include <vector>
 
+#include "client/client-response.hh"
 #include "exception/follower_exception.hh"
 #include "rpc/request-vote.hh"
 #include "utils/chrono/chrono.hh"
@@ -329,7 +330,10 @@ void Server::on_client_request(const client::ClientRequest& request)
     if (get_status() != ServerStatus::LEADER)
     {
         // send back message
-        (void)request;
+        auto response = client::ClientResponse::not_a_leader_response(get_voted_for());
+        std::string message = response.serialize();
+        MPI_Send(message.data(), message.size(), MPI_CHAR, request.get_client_index(),
+                0, MPI_COMM_WORLD);
     }
     else
     {

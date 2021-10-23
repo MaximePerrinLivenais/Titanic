@@ -33,4 +33,18 @@ namespace client
         server.on_client_request(*this);
     }
 
+    std::string ClientRequest::get_command() const
+    {
+        return command;
+    }
+
+    unsigned int ClientRequest::get_serial_number() const
+    {
+        return serial_number;
+    }
+
+    unsigned int ClientRequest::get_client_index() const
+    {
+        return client_index;
+    }
 }

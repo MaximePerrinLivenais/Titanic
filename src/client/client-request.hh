@@ -25,6 +25,10 @@ namespace client
 
         void apply(Server &server);
 
+        std::string get_command() const;
+        unsigned int get_serial_number() const;
+        unsigned int get_client_index() const;
+
     private:
         json serialize_json() const;
 
