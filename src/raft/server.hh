@@ -37,10 +37,11 @@ private:
     void apply_leader_rules();
 
     // Useful auxiliary functions
+    void set_current_term(const int current_term);
     void apply_query(rpc::shared_rpc query);
     void update_commit_index();
-    void handle_election_timeout();
-    void reset_timer();
+    void convert_to_candidate();
+    void reset_election_timeout();
     bool check_majority();
 
     // Messages

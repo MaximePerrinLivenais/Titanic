@@ -25,7 +25,7 @@ Server::Server()
     , commit_index(0)
     , last_applied(0)
 {
-    reset_timer();
+    reset_election_timeout();
 }
 
 void Server::run()
@@ -41,9 +41,6 @@ void Server::run()
         {
             // XXX: Debugging information
             // std::cout << "Receive: " << query_str_opt.value() << std::endl;
-
-            if (current_status != ServerStatus::LEADER)
-                begin = chrono::get_time_milliseconds();
 
             auto query =
                 rpc::RemoteProcedureCall::deserialize(query_str_opt.value());
@@ -94,6 +91,9 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
                  0, MPI_COMM_WORLD);
         return;
     }
+
+    if (current_status == ServerStatus::FOLLOWER)
+        begin = chrono::get_time_milliseconds();
 
     // 2. Reply false if log doesn’t contain an entry at prevLogIndex whose term
     // matches prevLogTerm (§5.3)
@@ -221,7 +221,7 @@ void Server::apply_follower_and_candidate_rules()
     //      If election timeout elapses: start new election
     //      FIXME: Not correctly dealed with for the moement
     if (chrono::get_time_milliseconds() - begin >= election_timeout)
-        handle_election_timeout();
+        convert_to_candidate();
 }
 
 void Server::apply_leader_rules()
@@ -277,6 +277,12 @@ void Server::apply_leader_rules()
 
 /* ---------------------- Useful auxialiary functions ---------------------- */
 
+void Server::set_current_term(const int current_term)
+{
+    this->current_term = current_term;
+    begin = chrono::get_time_milliseconds();
+}
+
 void Server::apply_query(rpc::shared_rpc query)
 {
     // Rules for Servers - All Servers:
@@ -284,7 +290,7 @@ void Server::apply_query(rpc::shared_rpc query)
     //      set currentTerm = T, convert to follower (§5.1)
     if (query->get_term() > current_term)
     {
-        current_term = query->get_term();
+        set_current_term(query->get_term());
         convert_to_follower();
     }
 
@@ -312,12 +318,12 @@ void Server::update_commit_index()
             commit_index = n;
 
         // If commit_index and n are equal it means we updated it in the loop
-        updated = commit_index == (int)n;
+        updated = commit_index == n;
     }
 }
 
 /// XXX: Rename it to convert_to_candidate ?
-void Server::handle_election_timeout()
+void Server::convert_to_candidate()
 {
     // XXX: Debugging information
     std::cout << "[ELECTION] Starting an election" << std::endl;
@@ -330,21 +336,18 @@ void Server::handle_election_timeout()
     //      • Send RequestVote RPCs to all other servers
     current_status = ServerStatus::CANDIDATE;
 
-    current_term += 1;
+    set_current_term(current_term + 1);
+    reset_election_timeout();
 
     voted_for = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
     vote_count = 1;
 
-    reset_timer();
-
     broadcast_request_vote();
 }
 
-void Server::reset_timer()
+void Server::reset_election_timeout()
 {
     srand(time(0) + mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD));
-
-    begin = chrono::get_time_milliseconds();
 
     auto range = MAX_TIMEOUT_MILLI - MIN_TIMEOUT_MILLI;
     election_timeout = std::rand() % (range) + MIN_TIMEOUT_MILLI;
@@ -403,8 +406,7 @@ void Server::convert_to_follower()
     current_status = ServerStatus::FOLLOWER;
     voted_for = 0;
 
-    // Reset timeout
-    reset_timer();
+    reset_election_timeout();
 }
 
 void Server::convert_to_leader()
