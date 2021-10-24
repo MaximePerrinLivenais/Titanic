@@ -15,7 +15,7 @@ namespace rpc
         bool get_vote_granted() const;
 
     private:
-        json serialize_json() const;
+        json serialize_json() const override;
 
         bool vote_granted;
     };

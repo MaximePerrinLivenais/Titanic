@@ -21,7 +21,7 @@ namespace rpc
         void apply(Server &server);
 
     private:
-        json serialize_json() const;
+        json serialize_json() const override;
 
         const unsigned int candidate_id;
         const int last_log_index;
