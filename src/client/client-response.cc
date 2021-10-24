@@ -19,7 +19,7 @@ namespace client
 
     json ClientResponse::serialize_json() const
     {
-        json serialization = json();
+        json serialization = ClientMsg::serialize_json();
 
         serialization["result"] = result;
         serialization["success"] = success;
@@ -32,5 +32,15 @@ namespace client
     {
         // this function should never be called because it's only for the client
         return;
+    }
+
+    bool ClientResponse::is_success() const
+    {
+        return success;
+    }
+
+    unsigned int ClientResponse::get_leader_id() const
+    {
+        return leader_id;
     }
 }

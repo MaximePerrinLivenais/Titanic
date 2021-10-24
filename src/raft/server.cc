@@ -15,8 +15,8 @@
 #include "utils/chrono/chrono.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
-constexpr unsigned int MIN_TIMEOUT_MILLI = 150;
-constexpr unsigned int MAX_TIMEOUT_MILLI = 300;
+constexpr unsigned int MIN_TIMEOUT_MILLI = 1500;
+constexpr unsigned int MAX_TIMEOUT_MILLI = 3000;
 
 Server::Server(int server_rank, int nb_servers)
     : server_rank(server_rank)
@@ -530,6 +530,7 @@ void Server::on_client_request(const client::ClientRequest& request)
     if (get_status() != ServerStatus::LEADER)
     {
         // send back message
+        std::cout << "Send back message to client\n";
         auto response = client::ClientResponse::not_a_leader_response(voted_for);
         std::string message = response.serialize();
         MPI_Send(message.data(), message.size(), MPI_CHAR, request.get_client_index(),
@@ -538,6 +539,7 @@ void Server::on_client_request(const client::ClientRequest& request)
     else
     {
         // handle request, send appendentries to follower etc ...
+        std::cout << "Leader recv request from client\n";
         (void)request;
     }
 

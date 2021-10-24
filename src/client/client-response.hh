@@ -14,6 +14,9 @@ namespace client
 
         void apply(Server &server);
 
+        bool is_success() const;
+        unsigned int get_leader_id() const;
+
     private:
         json serialize_json() const;
 

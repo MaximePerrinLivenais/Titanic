@@ -12,7 +12,6 @@ namespace client
 
     void ClientMsg::apply_message(Server& server)
     {
-        std::cout << "I apply a client message\n";
         this->apply(server);
     }
 

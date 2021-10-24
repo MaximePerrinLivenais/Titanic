@@ -19,7 +19,7 @@ namespace client
 
     json ClientRequest::serialize_json() const
     {
-        json serialization = json();
+        json serialization = ClientMsg::serialize_json();
 
         serialization["command"] = command;
         serialization["serial_number"] = serial_number;

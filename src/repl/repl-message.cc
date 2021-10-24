@@ -1,6 +1,7 @@
 #include "repl-message.hh"
 
 #include "request-crash-repl.hh"
+#include "request-start-repl.hh"
 
 // TODO remove header
 #include <iostream>
@@ -40,7 +41,7 @@ namespace repl
         case CRASH:
             return std::make_shared<RequestCrashREPL>(json_obj);
         case START:
-            abort();
+            return std::make_shared<RequestStartREPL>(json_obj);
         }
 
         throw std::invalid_argument("Not corresponding to existing REPL message");

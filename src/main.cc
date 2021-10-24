@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
     {
         Client client(nb_servers, rank);
         std::cout << rank << " : I am a client\n";
-        while (1){}
+        client.run();
     }
 
 

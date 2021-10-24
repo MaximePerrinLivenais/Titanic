@@ -97,7 +97,7 @@ private:
     // Number of servers, servers rank go from 1 to nb_servers
     int nb_servers;
 
-    static const unsigned int heartbeat_time = 30;
+    static const unsigned int heartbeat_time = 300;
 
     ServerStatus current_status;
 

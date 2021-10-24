@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "repl/repl-message.hh"
+#include "client/client.hh"
 #include "rpc/rpc.hh"
 
 namespace message
@@ -37,8 +38,9 @@ namespace message
             // times Maybe give the object `json` to deserialize.
             return rpc::RemoteProcedureCall::deserialize(message);
         case REPL_MESSAGE:
-            std::cout << "Message: " << message << std::endl;
             return repl::ReplMsg::deserialize(message);
+        case CLIENT_MESSAGE:
+            return client::ClientMsg::deserialize(message);
         }
         return nullptr;
     }

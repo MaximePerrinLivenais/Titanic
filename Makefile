@@ -6,9 +6,6 @@ TARGET = titanic
 
 RPC = \
 	src/message/message.cc \
-	src/repl/repl-message.cc \
-	src/repl/request-crash-repl.cc \
-	src/repl/repl.cc \
         src/rpc/append-entries.cc \
         src/rpc/append-entries-response.cc \
         src/rpc/request-vote.cc \
@@ -16,6 +13,14 @@ RPC = \
         src/rpc/rpc.cc \
         src/rpc/log-entry.cc \
         $(NULL)
+
+REPL = \
+        src/repl/repl.cc \
+        src/repl/repl-message.cc \
+        src/repl/request-crash-repl.cc \
+        src/repl/request-start-repl.cc \
+        $(NULL)
+
 
 CLIENT = \
          src/client/client.cc \
@@ -38,6 +43,7 @@ RAFT = \
 SRC =  \
         src/main.cc \
         $(RPC) \
+        $(REPL) \
         $(UTILS) \
         $(CLIENT) \
         $(RAFT) \
