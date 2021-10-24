@@ -14,7 +14,7 @@ namespace mpi
     std::optional<std::string> MPI_Listen(const MPI_Comm comm);
 
     void MPI_Broadcast(const std::string& message, const int tag,
-                        const MPI_Comm comm);
+                        const MPI_Comm comm, int rank, int nb_servers);
 
     int MPI_Get_group_comm_size(const MPI_Comm comm);
     int MPI_Get_group_comm_rank(const MPI_Comm comm);
