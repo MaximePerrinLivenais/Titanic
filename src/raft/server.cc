@@ -137,11 +137,11 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
     // 1. Reply false if term < currentTerm (§5.1)
     if (rpc.get_term() < current_term)
     {
-        rpc::AppendEntriesResponse response(current_term, false, server_rank,
-                                            get_last_log_index());
-        std::string message = response.serialize();
-        MPI_Send(message.data(), message.size(), MPI_CHAR, rpc.get_leader_id(),
-                 0, MPI_COMM_WORLD);
+        auto response = std::make_shared<rpc::AppendEntriesResponse>(current_term,
+                                                                        false,
+                                                                        server_rank,
+                                                                        get_last_log_index());
+        mpi::MPI_Serialize_and_send(response, rpc.get_leader_id(), 0, MPI_COMM_WORLD);
         return;
     }
 
@@ -150,15 +150,15 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
 
     // 2. Reply false if log doesn’t contain an entry at prevLogIndex whose term
     // matches prevLogTerm (§5.3)
-    // XXX: log[prev_log_index].term
     if (get_term_at_prev_log_index(rpc.get_prev_log_index())
         != rpc.get_prev_log_term())
     {
-        rpc::AppendEntriesResponse response(current_term, false, server_rank,
-                                            get_last_log_index());
-        std::string message = response.serialize();
-        MPI_Send(message.data(), message.size(), MPI_CHAR, rpc.get_leader_id(),
-                 0, MPI_COMM_WORLD);
+        auto response = std::make_shared<rpc::AppendEntriesResponse>(current_term,
+                                                                        false,
+                                                                        server_rank,
+                                                                        get_last_log_index());
+        mpi::MPI_Serialize_and_send(response, rpc.get_leader_id(), 0, MPI_COMM_WORLD);
+        return;
     }
 
     // 3. If an existing entry conflicts with a new one (same index but
@@ -187,11 +187,11 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
         commit_index =
             std::min(rpc.get_leader_commit_index(), last_entry_index);
 
-    rpc::AppendEntriesResponse response(current_term, true, server_rank,
-                                        last_entry_index);
-    std::string message = response.serialize();
-    MPI_Send(message.data(), message.size(), MPI_CHAR, rpc.get_leader_id(), 0,
-             MPI_COMM_WORLD);
+    auto response = std::make_shared<rpc::AppendEntriesResponse>(current_term,
+                                                                    true,
+                                                                    server_rank,
+                                                                    last_entry_index);
+    mpi::MPI_Serialize_and_send(response, rpc.get_leader_id(), 0, MPI_COMM_WORLD);
 }
 
 void Server::on_append_entries_response(const rpc::AppendEntriesResponse& rpc)
@@ -228,12 +228,8 @@ void Server::on_request_vote_rpc(const rpc::RequestVoteRPC& rpc)
     if (current_status == ServerStatus::CANDIDATE
         || rpc.get_term() < current_term)
     {
-        auto response = rpc::RequestVoteResponse(current_term, false);
-        auto serialized_response = response.serialize();
-
-        MPI_Send(serialized_response.c_str(), serialized_response.length(),
-                 MPI_CHAR, rpc.get_candidate_id(), 0, MPI_COMM_WORLD);
-
+        auto response = std::make_shared<rpc::RequestVoteResponse>(current_term, false);
+        mpi::MPI_Serialize_and_send(response, rpc.get_candidate_id(), 0, MPI_COMM_WORLD);
         return;
     }
 
@@ -243,22 +239,15 @@ void Server::on_request_vote_rpc(const rpc::RequestVoteRPC& rpc)
     if (!candidate_log_is_up_to_date(rpc.get_last_log_index(),
                                         rpc.get_last_log_term()))
     {
-        auto response = rpc::RequestVoteResponse(current_term, false);
-        auto serialized_response = response.serialize();
-
-        MPI_Send(serialized_response.c_str(), serialized_response.length(),
-                 MPI_CHAR, rpc.get_candidate_id(), 0, MPI_COMM_WORLD);
-
+        auto response = std::make_shared<rpc::RequestVoteResponse>(current_term, false);
+        mpi::MPI_Serialize_and_send(response, rpc.get_candidate_id(), 0, MPI_COMM_WORLD);
         return;
     }
 
     voted_for = voted_for > 0 ? voted_for : rpc.get_candidate_id();
 
-    auto response = rpc::RequestVoteResponse(current_term, voted_for > 0);
-    auto serialized_response = response.serialize();
-
-    MPI_Send(serialized_response.c_str(), serialized_response.length(),
-             MPI_CHAR, rpc.get_candidate_id(), 0, MPI_COMM_WORLD);
+    auto response = std::make_shared<rpc::RequestVoteResponse>(current_term, voted_for > 0);
+    mpi::MPI_Serialize_and_send(response, rpc.get_candidate_id(), 0, MPI_COMM_WORLD);
 }
 
 void Server::on_request_vote_response(const rpc::RequestVoteResponse& rpc)
@@ -348,17 +337,16 @@ void Server::apply_leader_rules()
 
         if (last_log_index >= next_index[idx])
         {
-            std::vector<rpc::LogEntry> entries(
-                log.begin() + next_index[idx],
-                log.end()); // FIXME: check if it is the correct range
+            // FIXME: check if it is the correct range
+            std::vector<rpc::LogEntry> entries(log.begin() + next_index[idx], log.end());
 
-            rpc::AppendEntriesRPC rpc(current_term, server_rank, prev_log_index,
-                                      prev_log_term, entries, commit_index);
-            std::string message = rpc.serialize();
-
-            // XXX: use enum RPC instead of dummy tag
-            MPI_Send(message.data(), message.size(), MPI_CHAR, idx, 0,
-                     MPI_COMM_WORLD);
+            auto rpc = std::make_shared<rpc::AppendEntriesRPC>(current_term,
+                                                                server_rank,
+                                                                prev_log_index,
+                                                                prev_log_term,
+                                                                entries,
+                                                                commit_index);
+            mpi::MPI_Serialize_and_send(rpc, idx, 0, MPI_COMM_WORLD);
         }
     }
 
@@ -520,13 +508,13 @@ void Server::leader_heartbeat()
         int prev_log_term = get_prev_log_term(follower_rank);
         auto entries = std::vector<rpc::LogEntry>();
 
-        auto empty_append_entry =
-            rpc::AppendEntriesRPC(current_term, server_rank, prev_log_index,
-                                  prev_log_term, entries, commit_index);
-
-        auto serialization = empty_append_entry.serialize();
-        MPI_Send(serialization.data(), serialization.length(), MPI_CHAR,
-                 follower_rank, 0, MPI_COMM_WORLD);
+        auto rpc = std::make_shared<rpc::AppendEntriesRPC>(current_term,
+                                                            server_rank,
+                                                            prev_log_index,
+                                                            prev_log_term,
+                                                            entries,
+                                                            commit_index);
+        mpi::MPI_Serialize_and_send(rpc, follower_rank, 0, MPI_COMM_WORLD);
     }
 }
 

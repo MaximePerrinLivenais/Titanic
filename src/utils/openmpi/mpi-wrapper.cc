@@ -46,6 +46,14 @@ namespace mpi
         return std::make_optional<std::string>(buffer.data(), count);
     }
 
+    int MPI_Serialize_and_send(const rpc::shared_rpc rpc, const int dest,
+                                const int tag, const MPI_Comm comm)
+    {
+        auto message = rpc->serialize();
+
+        return MPI_Send(message.data(), message.length(), MPI_CHAR, dest, tag, comm);
+    }
+
     void MPI_Broadcast(const std::string &message, const int tag,
                        const MPI_Comm comm, int rank, int nb_servers)
     {
