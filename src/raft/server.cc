@@ -82,7 +82,7 @@ void Server::save_log() const
 {
     int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
 
-    std::string filename = "server_n" + std::to_string(rank) + ".log";
+    std::string filename = "server_logs/server_n" + std::to_string(rank) + ".log";
 
     MPI_File file;
     // TODO: Check if it is open
