@@ -4,28 +4,52 @@
 
 #include "append-entries-response.hh"
 #include "append-entries.hh"
+#include "raft/server.hh"
 #include "request-vote-response.hh"
 #include "request-vote.hh"
+
+using namespace message;
 
 namespace rpc
 {
     RemoteProcedureCall::RemoteProcedureCall(const unsigned int term,
                                              const RPC_TYPE rpc_type)
-        : term(term)
+        : Message(MSG_TYPE::RPC_MESSAGE)
+        , term(term)
         , rpc_type(rpc_type)
     {}
 
-    const std::string RemoteProcedureCall::serialize() const
+    void RemoteProcedureCall::apply_message(Server& server)
     {
-        json serialization = this->serialize_json();
+        if (!server.is_alive())
+            return;
+
+        server.update_term(term);
+
+        this->apply(server);
+    }
+
+    json RemoteProcedureCall::serialize_json() const
+    {
+        json serialization = json();
 
         serialization["term"] = term;
         serialization["rpc_type"] = rpc_type;
 
-        return serialization.dump(4);
+        return serialization;
     }
 
-    shared_rpc RemoteProcedureCall::deserialize(const std::string &message)
+    // const std::string RemoteProcedureCall::serialize() const
+    // {
+    //     json serialization = this->serialize_json();
+
+    //     serialization["term"] = term;
+    //     serialization["rpc_type"] = rpc_type;
+
+    //     return serialization.dump(4);
+    // }
+
+    shared_rpc RemoteProcedureCall::deserialize(const std::string& message)
     {
         auto json_obj = json::parse(message);
         auto rpc_type = json_obj["rpc_type"].get<RPC_TYPE>();

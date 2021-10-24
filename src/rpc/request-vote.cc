@@ -25,7 +25,7 @@ namespace rpc
 
     json RequestVoteRPC::serialize_json() const
     {
-        json serialization = json();
+        json serialization = RemoteProcedureCall::serialize_json();
 
         serialization["candidate_id"] = candidate_id;
         serialization["last_log_index"] = last_log_index;

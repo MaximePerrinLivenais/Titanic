@@ -31,7 +31,7 @@ Server::Server()
 void Server::run()
 {
     // XXX: Debugging information
-    std::cout << "[RUNNING] Server" << std::endl;
+    // std::cout << "[RUNNING] Server" << std::endl;
     while (true)
     {
         // Rules for Servers - Followers (§5.2):
@@ -42,13 +42,31 @@ void Server::run()
             // XXX: Debugging information
             // std::cout << "Receive: " << query_str_opt.value() << std::endl;
 
-            auto query =
-                rpc::RemoteProcedureCall::deserialize(query_str_opt.value());
+            auto query = message::Message::deserialize(query_str_opt.value());
 
-            apply_query(query);
+            // TODO here we can deserialize direclty in message
+            // auto query =
+            // rpc::RemoteProcedureCall::deserialize(query_str_opt.value());
+
+
+            // XXX
+            // here call apply_message
+            // In the case of rpc -> do the same as apply_query
+            // In the case of repl -> apply directly
+            //
+            //
+            // XXX: apply message for CRASHED server only if from REPL
+
+            query->apply_message(*this);
+
+            // std::cout << "My status is: " << current_status << std::endl;
 
             query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
         }
+
+
+        if (!is_alive())
+            continue;
 
         save_log();
 
@@ -293,6 +311,22 @@ void Server::apply_leader_rules()
     update_commit_index();
 }
 
+void Server::update_term(unsigned int term)
+{
+    if (term > current_term)
+    {
+        set_current_term(term);
+        convert_to_follower();
+    }
+}
+
+void Server::crash()
+{
+    alive = false;
+}
+
+
+
 /* ---------------------- Useful auxialiary functions ---------------------- */
 
 void Server::set_current_term(const int current_term)
@@ -303,11 +337,14 @@ void Server::set_current_term(const int current_term)
     reset_election_timeout();
 }
 
-void Server::apply_query(rpc::shared_rpc query)
+/*void Server::apply_query(message::shared_msg query)
 {
     // Rules for Servers - All Servers:
     //      If RPC request or response contains term T > currentTerm:
     //      set currentTerm = T, convert to follower (§5.1)
+    if (get_status() == CRASHED)
+        return;
+
     if (query->get_term() > current_term)
     {
         set_current_term(query->get_term());
@@ -315,7 +352,7 @@ void Server::apply_query(rpc::shared_rpc query)
     }
 
     query->apply(*this);
-}
+}*/
 
 void Server::update_commit_index()
 {
@@ -346,7 +383,9 @@ void Server::update_commit_index()
 void Server::convert_to_candidate()
 {
     // XXX: Debugging information
-    std::cout << "[ELECTION] Starting an election" << std::endl;
+    int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
+    std::cout << "[ELECTION] " << rank << " is Starting an election"
+              << std::endl;
 
     // Rules for Servers - Candidates (§5.2):
     // On conversion to candidate, start election:
@@ -493,4 +532,14 @@ int Server::get_term_at_prev_log_index(int prev_log_index)
 void Server::set_status(const ServerStatus& server_status)
 {
     current_status = server_status;
+}
+
+ServerStatus Server::get_status() const
+{
+    return current_status;
+}
+
+bool Server::is_alive() const
+{
+    return alive;
 }

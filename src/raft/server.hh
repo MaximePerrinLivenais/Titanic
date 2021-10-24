@@ -4,12 +4,25 @@
 #include <string>
 #include <vector>
 
+#include "message/message.hh"
 #include "rpc/append-entries-response.hh"
 #include "rpc/append-entries.hh"
 #include "rpc/log-entry.hh"
 #include "rpc/request-vote-response.hh"
 #include "rpc/request-vote.hh"
 #include "status.hh"
+
+// namespace rpc
+//{
+//    class RemoteProcedureCall;
+//    using shared_rpc = std::shared_ptr<RemoteProcedureCall>;
+//
+//    class AppendEntriesRPC;
+//    class AppendEntriesResponse;
+//    class LogEntry;
+//    class RequestVoteRPC;
+//    class RequestVoteResponse;
+//} // namespace rpc
 
 class Server
 {
@@ -18,6 +31,7 @@ public:
 
     // XXX: For testing purpose
     void set_status(const ServerStatus& server_status);
+    ServerStatus get_status() const;
 
     void run();
     void save_log() const;
@@ -28,8 +42,15 @@ public:
     void on_request_vote_rpc(const rpc::RequestVoteRPC& rpc);
     void on_request_vote_response(const rpc::RequestVoteResponse& rpc);
 
+    bool is_alive() const;
+    void crash();
+    void update_term(unsigned int term);
+
 private:
     /* ----------- Methods ----------- */
+
+    int get_prev_log_index();
+    int get_prev_log_term();
 
     // Server rules
     void apply_rules();
@@ -37,8 +58,8 @@ private:
     void apply_leader_rules();
 
     // Useful auxiliary functions
-    void set_current_term(const int current_term);
-    void apply_query(rpc::shared_rpc query);
+    void set_current_term(const int term);
+    void apply_query(message::shared_msg query);
     void update_commit_index();
     void convert_to_candidate();
     void reset_election_timeout();
@@ -58,6 +79,11 @@ private:
     int get_prev_log_index(unsigned int rank);
     int get_prev_log_term(unsigned int rank);
     int get_term_at_prev_log_index(int prev_log_index);
+
+    // Repl modifiers
+    // XXX: maybe add crash to ServerStatus or use ElectionStatus + ServerStatus
+    bool alive = true;
+
 
     /* ----------- Attributes ----------- */
 

@@ -3,6 +3,7 @@
 #include "mpi.h"
 #include "raft/server.hh"
 #include "raft/status.hh"
+#include "repl/repl.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
 int main(int argc, char* argv[])
@@ -24,12 +25,14 @@ int main(int argc, char* argv[])
 
     if (rank == 0)
     {
-        while (true)
-        {}
+        repl::REPL repl;
+        repl.run();
     }
-
-    Server server;
-    server.run();
+    else
+    {
+        Server server;
+        server.run();
+    }
 
     // ---
     /*server.set_status(ServerStatus::FOLLOWER);
