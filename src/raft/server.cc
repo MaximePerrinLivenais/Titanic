@@ -64,16 +64,20 @@ void Server::save_log() const
 {
     int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
 
+    std::string filename = "server_n" + std::to_string(rank) + ".log";
+
+    MPI_File file;
     // TODO: Check if it is open
-    std::ofstream save_file("server_n" + std::to_string(rank) + ".log");
-    if (!save_file.is_open())
-        std::cout << "[ERROR] Cannot open log file\n";
+    MPI_File_open(MPI_COMM_SELF, filename.data(), MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL, &file);
+    MPI_Status status;
 
     for (const auto& entry : log)
-        save_file << entry.get_command() << std::endl;
+    {
+        std::string command = entry.get_command() + "\n";
+        MPI_File_write(file, command.data(), command.size(), MPI_CHAR, &status);
+    }
 
-    save_file.flush();
-    save_file.close();
+    MPI_File_close(&file);
 }
 
 /* ------------ Server reactions functions according to RPC type ------------ */
