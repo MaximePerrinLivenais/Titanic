@@ -31,7 +31,6 @@ namespace rpc
         unsigned int get_term() const;
         RPC_TYPE get_rpc_type() const;
 
-        // const std::string serialize() const;
         static shared_rpc deserialize(const std::string& message);
 
         void apply_message(Server& server) final;
