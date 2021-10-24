@@ -39,7 +39,7 @@ namespace rpc
         // virtual ~RemoteProcedureCall() = default;
 
     protected:
-        virtual json serialize_json() const = 0;
+        json serialize_json() const override;
         virtual void apply(Server& server) = 0;
 
         const unsigned int term;
