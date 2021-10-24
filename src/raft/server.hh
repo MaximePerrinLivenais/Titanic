@@ -10,6 +10,8 @@
 #include "rpc/log-entry.hh"
 #include "rpc/request-vote-response.hh"
 #include "rpc/request-vote.hh"
+#include "rpc/rpc.hh"
+#include "client/client-request.hh"
 #include "status.hh"
 
 // namespace rpc
@@ -41,13 +43,13 @@ public:
     void on_append_entries_response(const rpc::AppendEntriesResponse& rpc);
     void on_request_vote_rpc(const rpc::RequestVoteRPC& rpc);
     void on_request_vote_response(const rpc::RequestVoteResponse& rpc);
+    void on_client_request(const client::ClientRequest& request);
 
     bool is_alive() const;
     void crash();
     void update_term(unsigned int term);
 
 private:
-
 
     /* ----------- Methods ----------- */
 

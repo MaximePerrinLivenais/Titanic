@@ -17,6 +17,7 @@ namespace message
     {
         RPC_MESSAGE,
         REPL_MESSAGE,
+        CLIENT_MESSAGE
     };
 
     class Message

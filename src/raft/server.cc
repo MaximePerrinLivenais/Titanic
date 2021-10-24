@@ -8,6 +8,7 @@
 #include <mpi.h>
 #include <vector>
 
+#include "client/client-response.hh"
 #include "exception/follower_exception.hh"
 #include "raft/status.hh"
 #include "rpc/rpc.hh"
@@ -522,6 +523,26 @@ void Server::set_status(const ServerStatus& server_status)
 {
     current_status = server_status;
 }
+
+void Server::on_client_request(const client::ClientRequest& request)
+{
+    // XXX: what if not leader are yet elected
+    if (get_status() != ServerStatus::LEADER)
+    {
+        // send back message
+        auto response = client::ClientResponse::not_a_leader_response(voted_for);
+        std::string message = response.serialize();
+        MPI_Send(message.data(), message.size(), MPI_CHAR, request.get_client_index(),
+                0, MPI_COMM_WORLD);
+    }
+    else
+    {
+        // handle request, send appendentries to follower etc ...
+        (void)request;
+    }
+
+}
+
 
 ServerStatus Server::get_status() const
 {

@@ -43,7 +43,7 @@ namespace repl
             abort();
         }
 
-        throw std::invalid_argument("Not corresponding to existing RPCs");
+        throw std::invalid_argument("Not corresponding to existing REPL message");
     }
 
     REPL_MSG_TYPE ReplMsg::get_repl_msg_type() const

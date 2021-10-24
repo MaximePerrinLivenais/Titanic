@@ -17,6 +17,15 @@ RPC = \
         src/rpc/log-entry.cc \
         $(NULL)
 
+CLIENT = \
+         src/client/client.cc \
+         src/client/client-message.cc \
+         src/client/client-request.cc \
+         src/client/client-response.cc \
+         $(NULL)
+
+
+
 UTILS = \
         src/utils/openmpi/mpi-wrapper.cc \
 		src/utils/chrono/chrono.cc \
@@ -30,6 +39,7 @@ SRC =  \
         src/main.cc \
         $(RPC) \
         $(UTILS) \
+        $(CLIENT) \
         $(RAFT) \
         $(NULL)
 
