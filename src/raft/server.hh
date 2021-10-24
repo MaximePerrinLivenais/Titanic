@@ -70,6 +70,7 @@ private:
     void convert_to_candidate();
     void reset_election_timeout();
     bool check_majority();
+    bool candidate_log_is_up_to_date(int last_log_index, int last_log_term);
 
     // Messages
     void broadcast_request_vote();
