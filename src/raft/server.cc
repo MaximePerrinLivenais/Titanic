@@ -14,11 +14,13 @@
 #include "utils/chrono/chrono.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
-constexpr unsigned int MIN_TIMEOUT_MILLI = 150;
-constexpr unsigned int MAX_TIMEOUT_MILLI = 300;
+constexpr unsigned int MIN_TIMEOUT_MILLI = 3000;
+constexpr unsigned int MAX_TIMEOUT_MILLI = 6000;
 
-Server::Server()
-    : current_status(ServerStatus::FOLLOWER)
+Server::Server(int server_rank, int nb_servers)
+    : server_rank(server_rank)
+    , nb_servers(nb_servers)
+    , current_status(ServerStatus::FOLLOWER)
     , vote_count(0)
     , current_term(0)
     , voted_for(0)
@@ -413,9 +415,7 @@ void Server::reset_election_timeout()
 
 bool Server::check_majority()
 {
-    unsigned int size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
-
-    return vote_count * 2 > size;
+    return vote_count * 2 > (nb_servers + 1);
 }
 
 /* -------------------------------- Messages -------------------------------- */

@@ -27,7 +27,7 @@
 class Server
 {
 public:
-    Server();
+    Server(int nb_servers, int server_rank);
 
     // XXX: For testing purpose
     void set_status(const ServerStatus& server_status);
@@ -47,6 +47,8 @@ public:
     void update_term(unsigned int term);
 
 private:
+
+
     /* ----------- Methods ----------- */
 
     int get_prev_log_index();
@@ -87,7 +89,13 @@ private:
 
     /* ----------- Attributes ----------- */
 
-    static const unsigned int heartbeat_time = 30;
+    // To avoid calling MPI_Comm_rank every time
+    int server_rank;
+
+    // Number of servers, servers rank go from 1 to nb_servers
+    unsigned int nb_servers;
+
+    static const unsigned int heartbeat_time = 1500;
 
     ServerStatus current_status;
 

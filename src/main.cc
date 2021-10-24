@@ -16,6 +16,9 @@ int main(int argc, char* argv[])
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+
+    int nb_servers = std::stoi(argv[1]);
+
     char process_name[MPI_MAX_PROCESSOR_NAME];
     int process_name_len;
     MPI_Get_processor_name(process_name, &process_name_len);
@@ -28,10 +31,15 @@ int main(int argc, char* argv[])
         repl::REPL repl;
         repl.run();
     }
+    else if (rank >= 1 && rank <= nb_servers)
+    {
+        Server server(rank, nb_servers);
+        server.run();
+    }
     else
     {
-        Server server;
-        server.run();
+        //client
+        while(1){}
     }
 
     // ---
