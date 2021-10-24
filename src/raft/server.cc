@@ -108,6 +108,20 @@ void Server::save_log() const
     MPI_File_close(&file);
 }
 
+void Server::update_term(unsigned int term)
+{
+    if (term > current_term)
+    {
+        set_current_term(term);
+        convert_to_follower();
+    }
+}
+
+void Server::crash()
+{
+    alive = false;
+}
+
 /* ------------ Server reactions functions according to RPC type ------------ */
 
 void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
@@ -226,6 +240,18 @@ void Server::on_request_vote_rpc(const rpc::RequestVoteRPC& rpc)
     // 2. If votedFor is null or candidateId, and candidate’s log is at
     // least as up-to-date as receiver’s log, grant vote (§5.2, §5.4)
     // FIXME: Check log indexes
+    if (!candidate_log_is_up_to_date(rpc.get_last_log_index(),
+                                        rpc.get_last_log_term()))
+    {
+        auto response = rpc::RequestVoteResponse(current_term, false);
+        auto serialized_response = response.serialize();
+
+        MPI_Send(serialized_response.c_str(), serialized_response.length(),
+                 MPI_CHAR, rpc.get_candidate_id(), 0, MPI_COMM_WORLD);
+
+        return;
+    }
+
     voted_for = voted_for > 0 ? voted_for : rpc.get_candidate_id();
 
     auto response = rpc::RequestVoteResponse(current_term, voted_for > 0);
@@ -458,6 +484,15 @@ bool Server::check_majority()
     // XXX: avoir unsigned and signed comparaison
     int vote = vote_count;
     return vote * 2 > nb_servers;
+}
+
+bool Server::candidate_log_is_up_to_date(int last_log_index, int last_log_term)
+{
+    if (last_log_term < get_last_log_term())
+        return false;
+
+    return last_log_term > get_last_log_term()
+            || last_log_index >= get_last_log_index();
 }
 
 /* -------------------------------- Messages -------------------------------- */
