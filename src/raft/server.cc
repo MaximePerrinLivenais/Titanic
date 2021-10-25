@@ -267,11 +267,11 @@ void Server::apply_leader_rules()
         begin = chrono::get_time_milliseconds();
         leader_heartbeat();
 
-        auto log_entry =
+        /*auto log_entry =
             rpc::LogEntry(current_term,
                           "term = " + std::to_string(current_term)
                               + ", time = " + std::to_string(begin));
-        log.push_back(log_entry);
+        log.push_back(log_entry);*/
         return;
     }
 
@@ -530,7 +530,6 @@ void Server::on_client_request(const client::ClientRequest& request)
     if (get_status() != ServerStatus::LEADER)
     {
         // send back message
-        std::cout << "Send back message to client\n";
         auto response = client::ClientResponse::not_a_leader_response(voted_for);
         std::string message = response.serialize();
         MPI_Send(message.data(), message.size(), MPI_CHAR, request.get_client_index(),
@@ -540,7 +539,9 @@ void Server::on_client_request(const client::ClientRequest& request)
     {
         // handle request, send appendentries to follower etc ...
         std::cout << "Leader recv request from client\n";
-        (void)request;
+        auto log_entry = rpc::LogEntry(current_term, request.get_command());
+        log.push_back(log_entry);
+
     }
 
 }

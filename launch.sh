@@ -3,9 +3,11 @@ read -p 'Choose the number of clients: ' nb_clients
 
 nb_process=$((1 + nb_servers + nb_clients))
 
-if [ ! -d "server_logs" ]; then
-    mkdir server_logs
+if [ -d "server_logs" ]; then
+    rm server_logs -rf
 fi
+mkdir "server_logs"
+
 
 echo "localhost slots=$nb_process" > hostfile
 
