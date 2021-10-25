@@ -1,5 +1,5 @@
 CXX = mpic++
-CXXFLAGS = -std=c++20 -Wall -Werror -Wextra -pedantic
+CXXFLAGS = -std=c++20 -Wall -Werror -Wextra -pedantic -g
 CPPFLAGS = -Isrc -Ilib
 
 TARGET = titanic

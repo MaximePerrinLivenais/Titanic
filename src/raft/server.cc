@@ -65,6 +65,7 @@ void Server::run()
             // std::cout << "My status is: " << current_status << std::endl;
 
             query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
+
         }
 
 
@@ -145,8 +146,19 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
     // TODO
 
     // 4.  Append any new entries not already in the log
-    // FIXME: check that entries are not already in the log
-    log.insert(log.end(), rpc.get_entries().begin(), rpc.get_entries().end());
+    if (rpc.get_entries().size())
+    {
+        for (const auto& entry : rpc.get_entries())
+        {
+            // XXX: we might do something smarter using Log Matching property
+            if (std::find(log.begin(), log.end(), entry) == log.end())
+            {
+                std::cout << "Server n" << server_rank << " add to its log\n" << std::flush;
+                log.emplace_back(entry);
+            }
+        }
+        //log.insert(log.end(), rpc.get_entries().begin(), rpc.get_entries().end());
+    }
 
     // 5. If leaderCommit > commitIndex,
     // set commitIndex = min(leaderCommit, index of last new entry)
@@ -538,12 +550,10 @@ void Server::on_client_request(const client::ClientRequest& request)
     else
     {
         // handle request, send appendentries to follower etc ...
-        std::cout << "Leader recv request from client\n";
-        auto log_entry = rpc::LogEntry(current_term, request.get_command());
+        auto log_entry = rpc::LogEntry(current_term, request.get_command(),
+                request.get_client_index() ,request.get_serial_number());
         log.push_back(log_entry);
-
     }
-
 }
 
 

@@ -36,7 +36,7 @@ namespace repl
         }
         else
         {
-            std::clog << command_name << ": Unknown command\n";
+            //std::clog << command_name << ": Unknown command\n";
         }
 
         return std::nullopt;
