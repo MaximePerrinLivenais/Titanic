@@ -5,6 +5,8 @@
 #include "client-response.hh"
 #include <sstream>
 
+#include <unistd.h>
+
 Client::Client(const int server_last_index, unsigned int client_index) :
     serial_number(0), client_index(client_index), server_last_index(server_last_index)
 {
@@ -54,9 +56,11 @@ void Client::run()
 {
     while (last_recv_request < commands.size())
     {
+        //sleep(1);
         if (last_send_request == last_recv_request && started)
         {
             // send next request
+            std::cout << "Send request " << last_send_request << "\n";
             auto request = commands[last_send_request];
             int server_index = 1; // TODO: choose randomly
             send_request(request, server_index);
@@ -91,7 +95,10 @@ void Client::handle_message(message::shared_msg query)
         {
             auto client_rsp = std::dynamic_pointer_cast<client::ClientResponse>(client_msg);
             if (client_rsp->is_success())
+            {
                 last_recv_request++;
+                std::cout << "Recv response : " << last_recv_request << "\n";
+            }
             else
             {
                 // Maybe use the same serial_number 

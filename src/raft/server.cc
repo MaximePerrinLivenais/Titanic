@@ -253,17 +253,22 @@ void Server::apply_rules()
     //std::cout << "Commit index = " << commit_index << " vs Last applied = " << last_applied << "\n";
     if (commit_index > last_applied)
     {
+        std::cout << "Apply log\n";
         last_applied++;
         // XXX: Apply it
 
         // Answer to client
-        client::ClientResponse response(0, true, 0);
-        std::string message = response.serialize();
+        //
+        if (current_status == ServerStatus::LEADER)
+        {
+            client::ClientResponse response(0, true, 0);
+            std::string message = response.serialize();
 
-        auto client_index =  log[last_applied].get_client_index();
+            auto client_index =  log[last_applied].get_client_index();
 
-        MPI_Send(message.data(), message.size(), MPI_CHAR, client_index,
-                0, MPI_COMM_WORLD);
+            MPI_Send(message.data(), message.size(), MPI_CHAR, client_index,
+                    0, MPI_COMM_WORLD);
+        }
     }
 }
 
