@@ -3,10 +3,38 @@
 #include "utils/openmpi/mpi-wrapper.hh"
 #include "repl/repl-message.hh"
 #include "client-response.hh"
+#include <sstream>
 
 Client::Client(const int server_last_index, unsigned int client_index) :
     serial_number(0), client_index(client_index), server_last_index(server_last_index)
 {
+    load_clients_command();
+}
+
+void Client::load_clients_command()
+{
+    std::string filename = "client_commands/commands_"
+        + std::to_string(client_index) + ".txt";
+
+    MPI_File file;
+    MPI_Status status;
+    // TODO: Check if it is open
+
+    MPI_File_open(MPI_COMM_SELF, filename.data(),
+            MPI_MODE_RDONLY, MPI_INFO_NULL, &file);
+
+    MPI_Offset size;
+    MPI_File_get_size(file, &size);
+
+    std::vector<char> buf = std::vector<char>(size);
+    MPI_File_read(file, buf.data(), size, MPI_CHAR, &status);
+
+    std::string commands_data(buf.begin(), buf.end());
+    std::stringstream stream(commands_data);
+
+    std::string line;
+    while (std::getline(stream, line))
+        commands.push_back(create_request(line));
 }
 
 client::ClientRequest Client::create_request(const std::string& command)
@@ -24,12 +52,12 @@ void Client::send_request(const client::ClientRequest& request,
 
 void Client::run()
 {
-    while (last_recv_request == 0)
+    while (last_recv_request < commands.size())
     {
-        if (last_send_request == 0 && started)
+        if (last_send_request == last_recv_request && started)
         {
             // send next request
-            auto request = create_request("command random");
+            auto request = commands[last_send_request];
             int server_index = 1; // TODO: choose randomly
             send_request(request, server_index);
             last_send_request++;
@@ -43,7 +71,8 @@ void Client::run()
             handle_message(query);
         }
     }
-    std::cout << "Client " << client_index << " finished is journey\n";
+    std::cout << "Client " << client_index << " finished it's journey\n";
+
     while(1){}
 }
 
@@ -66,7 +95,8 @@ void Client::handle_message(message::shared_msg query)
             else
             {
                 // Maybe use the same serial_number 
-                auto request = create_request("command random bis");
+                // -1 here because we increment last_send_request on first send
+                auto request = commands[last_send_request-1];
                 send_request(request, client_rsp->get_leader_id());
             }
         }

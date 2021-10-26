@@ -12,7 +12,7 @@ namespace rpc
         explicit AppendEntriesResponse(const unsigned int term,
                                        const bool success,
                                        const unsigned int follower_index,
-                                       const unsigned int last_log_index);
+                                       const int last_log_index);
 
         explicit AppendEntriesResponse(const json& json_obj);
 
@@ -20,13 +20,13 @@ namespace rpc
 
         bool get_success() const;
         unsigned int get_follower_index() const;
-        unsigned int get_last_log_index() const;
+        int get_last_log_index() const;
 
     private:
         json serialize_json() const;
 
         const bool success;
         const unsigned int follower_index;
-        const unsigned int last_log_index;
+        const int last_log_index;
     };
 } // namespace rpc

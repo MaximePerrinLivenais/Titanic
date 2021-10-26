@@ -20,7 +20,7 @@ mkdir "client_commands"
 nb_process=$((1 + nb_servers + nb_clients))
 first_client=$((nb_servers + 1))
 for client in $(seq "$first_client" "$nb_process"); do
-    filename="client_commands/commands_$client"
+    filename="client_commands/commands_$client.txt"
     for req_idx in $(seq $nb_requests); do
         echo "Client $client - command $req_idx" >> $filename
     done
@@ -30,4 +30,4 @@ done
 
 echo "localhost slots=$nb_process" > hostfile
 
-#mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0 ./titanic $nb_servers $nb_clients
+mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0 ./titanic $nb_servers $nb_clients

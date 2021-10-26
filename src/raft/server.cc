@@ -25,8 +25,8 @@ Server::Server(int server_rank, int nb_servers)
     , vote_count(0)
     , current_term(0)
     , voted_for(0)
-    , commit_index(0)
-    , last_applied(0)
+    , commit_index(-1)
+    , last_applied(-1)
 {
     reset_election_timeout();
 }
@@ -74,6 +74,7 @@ void Server::run()
 
         save_log();
 
+        apply_rules();
         if (current_status == ServerStatus::LEADER)
             apply_leader_rules();
         else if (current_status == ServerStatus::CANDIDATE
@@ -249,10 +250,20 @@ void Server::apply_rules()
     // Rules for Servers - All Servers:
     //      If commitIndex > lastApplied: increment lastApplied, apply
     //      log[lastApplied] to state machine (§5.3)
+    //std::cout << "Commit index = " << commit_index << " vs Last applied = " << last_applied << "\n";
     if (commit_index > last_applied)
     {
         last_applied++;
         // XXX: Apply it
+
+        // Answer to client
+        client::ClientResponse response(0, true, 0);
+        std::string message = response.serialize();
+
+        auto client_index =  log[last_applied].get_client_index();
+
+        MPI_Send(message.data(), message.size(), MPI_CHAR, client_index,
+                0, MPI_COMM_WORLD);
     }
 }
 
@@ -484,7 +495,7 @@ void Server::convert_to_leader()
 
     // For each server, index of highest log entry known to be replicated on
     // server (initialized to 0, increases monotonically)
-    match_index = std::vector<int>(nb_servers + 1, 0);
+    match_index = std::vector<int>(nb_servers + 1, -1);
 
     // XXX: Debugging information
     std::cout << "[LEADER] term : " << current_term << ", rank : " << server_rank

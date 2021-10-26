@@ -6,7 +6,7 @@ namespace rpc
 {
     AppendEntriesResponse::AppendEntriesResponse(
         const unsigned int term, const bool success,
-        const unsigned int follower_index, const unsigned int last_log_index)
+        const unsigned int follower_index, const int last_log_index)
         : RemoteProcedureCall(term, RPC_TYPE::APPEND_ENTRIES_RESPONSE)
         , success(success)
         , follower_index(follower_index)
@@ -34,7 +34,7 @@ namespace rpc
         return follower_index;
     }
 
-    unsigned int AppendEntriesResponse::get_last_log_index() const
+    int AppendEntriesResponse::get_last_log_index() const
     {
         return last_log_index;
     }

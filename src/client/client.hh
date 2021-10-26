@@ -15,6 +15,7 @@ class Client
 
     private:
 
+        void load_clients_command();
         void handle_message(message::shared_msg query);
         // XXX: map between serial_number and ClientRequest to tracks sent request
         // and remove them when answered
@@ -28,9 +29,12 @@ class Client
 
 
         // Use with std::vector<std::string> commands;
-        int last_send_request = 0;
-        int last_recv_request = 0;
+        unsigned last_send_request = 0;
+        unsigned last_recv_request = 0;
 
 
         bool recv_all_response = false;
+
+
+        std::vector<client::ClientRequest> commands;
 };
