@@ -2,6 +2,7 @@
 
 #include "request-crash-repl.hh"
 #include "request-start-repl.hh"
+#include "request-speed-repl.hh"
 
 // TODO remove header
 #include <iostream>
@@ -37,7 +38,7 @@ namespace repl
         switch (repl_msg_type)
         {
         case SPEED:
-            abort();
+            return std::make_shared<RequestSpeedREPL>(json_obj);
         case CRASH:
             return std::make_shared<RequestCrashREPL>(json_obj);
         case START:

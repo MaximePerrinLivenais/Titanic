@@ -26,7 +26,21 @@ namespace repl
         }
         else if (command_name == "SPEED")
         {
-            std::clog << "Not implemented yet\n";
+            unsigned int process_target;
+            std::string speed_str;
+            std::cin >> process_target;
+            std::cin >> speed_str;
+            ServerSpeed speed;
+            if (speed_str == "LOW")
+                speed = LOW;
+            else if (speed_str == "MEDIUM")
+                speed = MEDIUM;
+            else if (speed_str == "HIGH")
+                speed = HIGH;
+            else
+                return std::nullopt;
+
+            return std::make_shared<RequestSpeedREPL>(process_target, speed);
         }
         else if (command_name == "START")
         {
