@@ -4,6 +4,7 @@
 #include "request-start-repl.hh"
 #include "request-speed-repl.hh"
 #include "request-send-repl.hh"
+#include "request-recovery-repl.hh"
 
 // TODO remove header
 #include <iostream>
@@ -46,6 +47,8 @@ namespace repl
             return std::make_shared<RequestStartREPL>(json_obj);
         case SEND:
             return std::make_shared<RequestSendREPL>(json_obj);
+        case RECOVERY:
+            return std::make_shared<RequestRecoveryREPL>(json_obj);
         }
 
         throw std::invalid_argument("Not corresponding to existing REPL message");

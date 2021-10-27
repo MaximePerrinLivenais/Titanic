@@ -9,6 +9,7 @@
 #include "request-start-repl.hh"
 #include "request-speed-repl.hh"
 #include "request-send-repl.hh"
+#include "request-recovery-repl.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
 namespace repl
@@ -58,6 +59,12 @@ namespace repl
             unsigned int process_target;
             std::cin >> process_target;
             return std::make_shared<RequestSendREPL>(process_target);
+        }
+        else if (command_name == "RECOVERY")
+        {
+            unsigned int process_target;
+            std::cin >> process_target;
+            return std::make_shared<RequestRecoveryREPL>(process_target);
         }
         else
         {

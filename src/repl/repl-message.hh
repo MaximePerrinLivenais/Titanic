@@ -14,6 +14,7 @@ namespace repl
         CRASH,
         START,
         SEND,
+        RECOVERY,
     };
 
     class ReplMsg;

@@ -108,20 +108,6 @@ void Server::save_log() const
     MPI_File_close(&file);
 }
 
-void Server::update_term(unsigned int term)
-{
-    if (term > current_term)
-    {
-        set_current_term(term);
-        convert_to_follower();
-    }
-}
-
-void Server::crash()
-{
-    alive = false;
-}
-
 /* ------------ Server reactions functions according to RPC type ------------ */
 
 void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
@@ -365,6 +351,25 @@ void Server::apply_leader_rules()
     //      matchIndex[i] ≥ N, and log[N].term == currentTerm:
     //      set commitIndex = N (§5.3, §5.4).
     update_commit_index();
+}
+
+void Server::update_term(unsigned int term)
+{
+    if (term > current_term)
+    {
+        set_current_term(term);
+        convert_to_follower();
+    }
+}
+
+void Server::crash()
+{
+    alive = false;
+}
+
+void Server::recovery()
+{
+    alive = true;
 }
 
 void Server::change_speed(repl::ServerSpeed speed)

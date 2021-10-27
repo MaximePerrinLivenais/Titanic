@@ -48,6 +48,7 @@ public:
 
     bool is_alive() const;
     void crash();
+    void recovery();
     void change_speed(repl::ServerSpeed speed);
     void update_term(unsigned int term);
 

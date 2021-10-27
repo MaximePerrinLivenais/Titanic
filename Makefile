@@ -21,6 +21,7 @@ REPL = \
         src/repl/request-start-repl.cc \
         src/repl/request-speed-repl.cc \
         src/repl/request-send-repl.cc \
+        src/repl/request-recovery-repl.cc \
         $(NULL)
 
 
