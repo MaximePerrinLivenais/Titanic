@@ -589,7 +589,6 @@ void Server::on_client_request(const client::ClientRequest& request)
     }
 }
 
-
 ServerStatus Server::get_status() const
 {
     return current_status;

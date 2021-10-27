@@ -70,5 +70,4 @@ namespace rpc
         return other.client_index == client_index &&
             other.serial_number == serial_number;
     }
-
 } // namespace rpc
