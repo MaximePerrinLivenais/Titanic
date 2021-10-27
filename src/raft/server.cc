@@ -352,7 +352,10 @@ void Server::crash()
     alive = false;
 }
 
-
+void Server::speed()
+{
+    std::cout << "Speed requets for server " << server_rank << "\n";
+}
 
 /* ---------------------- Useful auxialiary functions ---------------------- */
 

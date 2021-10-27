@@ -47,6 +47,7 @@ public:
 
     bool is_alive() const;
     void crash();
+    void speed();
     void update_term(unsigned int term);
 
 private:

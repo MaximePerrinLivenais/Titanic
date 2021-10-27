@@ -1,5 +1,6 @@
 #pragma once
 
+#include "repl.hh"
 #include "repl-message.hh"
 
 namespace repl
@@ -7,7 +8,7 @@ namespace repl
     class RequestSpeedREPL : public ReplMsg
     {
     public:
-        explicit RequestSpeedREPL(unsigned int target_process);
+        explicit RequestSpeedREPL(unsigned int target_process, ServerSpeed speed);
 
         explicit RequestSpeedREPL(const json& json_obj);
 
@@ -18,5 +19,6 @@ namespace repl
         void apply(Server& server);
 
         unsigned int target_process;
+        ServerSpeed speed;
     };
 } // namespace repl

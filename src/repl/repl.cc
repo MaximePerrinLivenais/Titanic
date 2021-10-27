@@ -7,6 +7,7 @@
 
 #include "request-crash-repl.hh"
 #include "request-start-repl.hh"
+#include "request-speed-repl.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
 namespace repl
@@ -38,7 +39,10 @@ namespace repl
             else if (speed_str == "HIGH")
                 speed = HIGH;
             else
+            {
+                std::cout << "Invalid speed option\n";
                 return std::nullopt;
+            }
 
             return std::make_shared<RequestSpeedREPL>(process_target, speed);
         }
