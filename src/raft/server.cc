@@ -366,20 +366,6 @@ void Server::apply_leader_rules()
     update_commit_index();
 }
 
-void Server::update_term(unsigned int term)
-{
-    if (term > current_term)
-    {
-        set_current_term(term);
-        convert_to_follower();
-    }
-}
-
-void Server::crash()
-{
-    alive = false;
-}
-
 void Server::change_speed(repl::ServerSpeed speed)
 {
     // I prefer to set latency related to heartbeat_time
