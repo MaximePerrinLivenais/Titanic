@@ -26,6 +26,7 @@ namespace rpc
             json_obj["term"], json_obj["leader_id"], json_obj["prev_log_index"],
             json_obj["prev_log_term"], LogEntry::serialize(json_obj["entries"]),
             json_obj["leader_commit_index"])
+
     {}
 
     json AppendEntriesRPC::serialize_json() const
