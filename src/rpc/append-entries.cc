@@ -1,5 +1,7 @@
 #include "rpc/append-entries.hh"
 
+#include <iostream>
+
 #include "exception/follower_exception.hh"
 #include "raft/server.hh"
 
@@ -19,27 +21,32 @@ namespace rpc
         , leader_commit_index(leader_commit_index)
     {}
 
-    AppendEntriesRPC::AppendEntriesRPC(const json &json_obj)
-        : AppendEntriesRPC(json_obj["term"], json_obj["leader_id"],
-                           json_obj["prev_log_index"],
-                           json_obj["prev_log_term"], std::vector<LogEntry>(),
-                           json_obj["leader_commit_index"])
+    AppendEntriesRPC::AppendEntriesRPC(const json& json_obj)
+        : AppendEntriesRPC(
+            json_obj["term"], json_obj["leader_id"], json_obj["prev_log_index"],
+            json_obj["prev_log_term"], LogEntry::serialize(json_obj["entries"]),
+            json_obj["leader_commit_index"])
+
     {}
 
     json AppendEntriesRPC::serialize_json() const
     {
-        json serialization = json();
+        json serialization = RemoteProcedureCall::serialize_json();
 
         serialization["leader_id"] = leader_id;
         serialization["prev_log_index"] = prev_log_index;
         serialization["prev_log_term"] = prev_log_term;
-        // FIXME serialize entries
         serialization["leader_commit_index"] = leader_commit_index;
+
+        serialization["entries"] = entries;
+
+        // std::cout << "ENTRIES => " << serialization["entries"].dump(4)
+        //          << std::endl;
 
         return serialization;
     }
 
-    const std::vector<LogEntry> &AppendEntriesRPC::get_entries() const
+    const std::vector<LogEntry>& AppendEntriesRPC::get_entries() const
     {
         return entries;
     }
@@ -49,28 +56,23 @@ namespace rpc
         return leader_id;
     }
 
-    unsigned int AppendEntriesRPC::get_prev_log_index() const
+    int AppendEntriesRPC::get_prev_log_index() const
     {
         return prev_log_index;
     }
 
-    unsigned int AppendEntriesRPC::get_prev_log_term() const
+    int AppendEntriesRPC::get_prev_log_term() const
     {
         return prev_log_term;
     }
 
-    unsigned int AppendEntriesRPC::get_leader_commit_index() const
+    int AppendEntriesRPC::get_leader_commit_index() const
     {
         return leader_commit_index;
     }
 
-    void AppendEntriesRPC::apply(Server &server)
+    void AppendEntriesRPC::apply(Server& server)
     {
-        if (server.get_status() == ServerStatus::CANDIDATE)
-        {
-            if (this->get_term() >= server.get_term())
-                server.convert_to_follower();
-        }
-        // ...
+        server.on_append_entries_rpc(*this);
     }
 } // namespace rpc

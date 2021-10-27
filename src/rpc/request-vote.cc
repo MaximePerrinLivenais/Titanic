@@ -18,14 +18,14 @@ namespace rpc
         , last_log_term(last_log_term)
     {}
 
-    RequestVoteRPC::RequestVoteRPC(const json &json_obj)
+    RequestVoteRPC::RequestVoteRPC(const json& json_obj)
         : RequestVoteRPC(json_obj["term"], json_obj["candidate_id"],
                          json_obj["last_log_index"], json_obj["last_log_term"])
     {}
 
     json RequestVoteRPC::serialize_json() const
     {
-        json serialization = json();
+        json serialization = RemoteProcedureCall::serialize_json();
 
         serialization["candidate_id"] = candidate_id;
         serialization["last_log_index"] = last_log_index;
@@ -49,28 +49,8 @@ namespace rpc
         return last_log_term;
     }
 
-    void RequestVoteRPC::apply(Server &server)
+    void RequestVoteRPC::apply(Server& server)
     {
-        auto vote_granted = true;
-
-        if (server.get_status() == ServerStatus::CANDIDATE)
-        {
-            // It already voted for candidate_id
-            // Send RequestVoteResponse with granted_vote = false
-            vote_granted = false;
-        }
-        else if (server.get_status() == ServerStatus::FOLLOWER)
-        {
-            if (server.get_voted_for() > 0)
-                vote_granted = false;
-            else
-                server.set_voted_for(candidate_id);
-        }
-
-        auto response = RequestVoteResponse(server.get_term(), vote_granted);
-        auto serialized_response = response.serialize();
-
-        MPI_Send(serialized_response.c_str(), serialized_response.length(),
-                 MPI_CHAR, candidate_id, 0, MPI_COMM_WORLD);
+        server.on_request_vote_rpc(*this);
     }
 } // namespace rpc

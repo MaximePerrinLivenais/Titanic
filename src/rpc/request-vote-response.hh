@@ -11,8 +11,8 @@ namespace rpc
 
         explicit RequestVoteResponse(const json& json_obj);
 
-        void apply(Server &server);
-        bool get_vote_granted();
+        void apply(Server& server);
+        bool get_vote_granted() const;
 
     private:
         json serialize_json() const;

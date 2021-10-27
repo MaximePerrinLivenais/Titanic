@@ -43,19 +43,13 @@ namespace mpi
         auto buffer = std::vector<char>(count);
         MPI_Recv(buffer.data(), count, MPI_CHAR, source, tag, comm, &status);
 
-        return std::make_optional<std::string>(std::string(buffer.data()));
+        return std::make_optional<std::string>(buffer.data(), count);
     }
 
     void MPI_Broadcast(const std::string &message, const int tag,
-                       const MPI_Comm comm)
+                       const MPI_Comm comm, int rank, int nb_servers)
     {
-        int size;
-        MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-        int rank;
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-        for (int i = 1; i < size; i++)
+        for (int i = 1; i < nb_servers; i++)
         {
             if (i != rank)
             {
@@ -65,4 +59,19 @@ namespace mpi
         }
     }
 
+    int MPI_Get_group_comm_size(const MPI_Comm comm)
+    {
+        int size;
+        MPI_Comm_size(comm, &size);
+
+        return size;
+    }
+
+    int MPI_Get_group_comm_rank(const MPI_Comm comm)
+    {
+        int rank;
+        MPI_Comm_rank(comm, &rank);
+
+        return rank;
+    }
 } // namespace mpi
