@@ -23,7 +23,7 @@ namespace rpc
         int get_last_log_index() const;
 
     private:
-        json serialize_json() const;
+        json serialize_json() const override;
 
         const bool success;
         const unsigned int follower_index;
