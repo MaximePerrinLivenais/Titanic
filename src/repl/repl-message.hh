@@ -13,6 +13,7 @@ namespace repl
         SPEED,
         CRASH,
         START,
+        RECOVERY,
     };
 
     class ReplMsg;

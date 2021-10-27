@@ -20,6 +20,7 @@ REPL = \
         src/repl/request-crash-repl.cc \
         src/repl/request-start-repl.cc \
         src/repl/request-speed-repl.cc \
+        src/repl/request-recovery-repl.cc \
         $(NULL)
 
 

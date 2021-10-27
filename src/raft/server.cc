@@ -357,6 +357,11 @@ void Server::crash()
     alive = false;
 }
 
+void Server::recovery()
+{
+    alive = true;
+}
+
 void Server::change_speed(repl::ServerSpeed speed)
 {
     // I prefer to set latency related to heartbeat_time
