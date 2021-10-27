@@ -4,9 +4,9 @@ namespace repl
 {
     enum ServerSpeed
     {
-        LOW = 500,
-        MEDIUM = 250,
-        HIGH = 0
+        LOW,
+        MEDIUM,
+        HIGH
     };
 
     class REPL

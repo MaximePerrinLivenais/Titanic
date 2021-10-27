@@ -1,5 +1,7 @@
 #include "server.hh"
 
+#include <thread>
+#include <chrono>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -37,6 +39,9 @@ void Server::run()
     // std::cout << "[RUNNING] Server" << std::endl;
     while (true)
     {
+        // Maybe do it several time before each I/O function
+         std::this_thread::sleep_for(std::chrono::milliseconds(latency));
+
         // Rules for Servers - Followers (§5.2):
         //      Respond to RPCs from candidates and leaders
         auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
@@ -352,9 +357,18 @@ void Server::crash()
     alive = false;
 }
 
-void Server::speed()
+void Server::change_speed(repl::ServerSpeed speed)
 {
-    std::cout << "Speed requets for server " << server_rank << "\n";
+    // I prefer to set latency related to heartbeat_time
+    // Maybe set the speed randomly at each loop
+    if (speed == repl::LOW)
+        latency = heartbeat_time * 0.8;
+    else if (speed == repl::MEDIUM)
+        latency = heartbeat_time * 0.4;
+    else
+        latency = 0;
+
+    std::cout << "Speed set to " << latency << " for server " << server_rank <<"\n";
 }
 
 /* ---------------------- Useful auxialiary functions ---------------------- */

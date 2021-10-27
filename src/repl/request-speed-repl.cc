@@ -35,6 +35,6 @@ namespace repl
 
     void RequestSpeedREPL::apply(Server& server)
     {
-        server.speed();
+        server.change_speed(speed);
     }
 } // namespace repl

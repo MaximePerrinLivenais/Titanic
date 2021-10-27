@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "message/message.hh"
+#include "repl/repl.hh"
 #include "rpc/append-entries-response.hh"
 #include "rpc/append-entries.hh"
 #include "rpc/log-entry.hh"
@@ -47,7 +48,7 @@ public:
 
     bool is_alive() const;
     void crash();
-    void speed();
+    void change_speed(repl::ServerSpeed speed);
     void update_term(unsigned int term);
 
 private:
@@ -88,6 +89,7 @@ private:
     // Repl modifiers
     // XXX: maybe add crash to ServerStatus or use ElectionStatus + ServerStatus
     bool alive = true;
+    int latency = 0;
 
 
     /* ----------- Attributes ----------- */
