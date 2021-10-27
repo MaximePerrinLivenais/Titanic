@@ -136,7 +136,6 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
 
     // 2. Reply false if log doesn’t contain an entry at prevLogIndex whose term
     // matches prevLogTerm (§5.3)
-    // XXX: log[prev_log_index].term
     if (get_term_at_prev_log_index(rpc.get_prev_log_index())
         != rpc.get_prev_log_term())
     {
@@ -149,7 +148,16 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
 
     // 3. If an existing entry conflicts with a new one (same index but
     // different terms), delete the existing entry and all that follow it (§5.3)
-    // TODO
+    auto log_it = log.begin() + rpc.get_prev_log_index() + 1;
+    auto entries_it = rpc.get_entries().begin();
+
+    while (log_it != log.end() && entries_it != rpc.get_entries().end()
+            && log_it->get_term() == entries_it->get_term())
+    {
+        log_it++;
+        entries_it++;
+    }
+    log.erase(log_it, log.end());
 
     // 4.  Append any new entries not already in the log
     if (rpc.get_entries().size())
@@ -557,10 +565,7 @@ int Server::get_prev_log_term(unsigned int rank)
 
 int Server::get_term_at_prev_log_index(int prev_log_index)
 {
-    if (prev_log_index < 0)
-        return -1;
-
-    return log[prev_log_index].get_term();
+    return prev_log_index >= 0 ? log[prev_log_index].get_term() : -1;
 }
 
 // XXX: For testing purpose
