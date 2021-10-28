@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "mpi.h"
 #include "client/client.hh"
+#include "mpi.h"
 #include "raft/server.hh"
 #include "raft/status.hh"
 #include "repl/repl.hh"
@@ -22,6 +22,7 @@ int main(int argc, char* argv[])
     }
     else if (rank >= 1 && rank <= nb_servers)
     {
+        std::cout << "Hi, I am rank: " << rank << std::endl;
         Server server(rank, nb_servers);
         server.run();
     }
@@ -31,8 +32,6 @@ int main(int argc, char* argv[])
         std::cout << rank << " : I am a client\n";
         client.run();
     }
-
-
 
     MPI_Finalize();
 }

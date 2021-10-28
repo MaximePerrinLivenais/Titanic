@@ -12,13 +12,13 @@ namespace rpc
                                 const int last_log_index,
                                 const int last_log_term);
 
-        explicit RequestVoteRPC(const json &json_obj);
+        explicit RequestVoteRPC(const json& json_obj);
 
         unsigned int get_candidate_id() const;
         int get_last_log_index() const;
         int get_last_log_term() const;
 
-        void apply(Server &server);
+        void apply(Server& server) override;
 
     private:
         json serialize_json() const override;

@@ -31,8 +31,10 @@ namespace repl
         return serialization;
     }
 
-    void RequestCrashREPL::apply(Server& server)
+    void RequestCrashREPL::apply_message(Process& process)
     {
+        Server& server = dynamic_cast<Server&>(process);
         server.crash();
     }
+
 } // namespace repl

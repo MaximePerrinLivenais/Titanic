@@ -73,6 +73,7 @@ namespace rpc
 
     void AppendEntriesRPC::apply(Server& server)
     {
+        std::cout << "Apply appending entries" << std::endl;
         server.on_append_entries_rpc(*this);
     }
 } // namespace rpc

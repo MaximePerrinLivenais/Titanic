@@ -1,5 +1,7 @@
 #include "append-entries-response.hh"
 
+#include <iostream>
+
 #include "raft/server.hh"
 
 namespace rpc
@@ -21,6 +23,7 @@ namespace rpc
 
     void AppendEntriesResponse::apply(Server& server)
     {
+        std::cout << "Apply appending entries response" << std::endl;
         server.on_append_entries_response(*this);
     }
 

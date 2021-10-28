@@ -11,11 +11,12 @@ namespace repl
 
         explicit RequestStartREPL(const json& json_obj);
 
+        void apply_message(Process& process) final;
+
         void send();
 
     private:
         json serialize_json() const;
-        void apply(Server& server);
 
         unsigned int target_process;
     };

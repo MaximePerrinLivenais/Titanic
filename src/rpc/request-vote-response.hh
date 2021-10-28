@@ -11,7 +11,7 @@ namespace rpc
 
         explicit RequestVoteResponse(const json& json_obj);
 
-        void apply(Server& server);
+        void apply(Server& server) override;
         bool get_vote_granted() const;
 
     private:

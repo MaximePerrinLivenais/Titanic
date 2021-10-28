@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 
+#include "client/client-request.hh"
 #include "message/message.hh"
+#include "process/process.hh"
 #include "repl/repl.hh"
 #include "rpc/append-entries-response.hh"
 #include "rpc/append-entries.hh"
@@ -12,22 +14,9 @@
 #include "rpc/request-vote-response.hh"
 #include "rpc/request-vote.hh"
 #include "rpc/rpc.hh"
-#include "client/client-request.hh"
 #include "status.hh"
 
-// namespace rpc
-//{
-//    class RemoteProcedureCall;
-//    using shared_rpc = std::shared_ptr<RemoteProcedureCall>;
-//
-//    class AppendEntriesRPC;
-//    class AppendEntriesResponse;
-//    class LogEntry;
-//    class RequestVoteRPC;
-//    class RequestVoteResponse;
-//} // namespace rpc
-
-class Server
+class Server : public Process
 {
 public:
     Server(int nb_servers, int server_rank);
@@ -52,7 +41,6 @@ public:
     void update_term(unsigned int term);
 
 private:
-
     /* ----------- Methods ----------- */
 
     int get_prev_log_index();
@@ -91,7 +79,6 @@ private:
     // XXX: maybe add crash to ServerStatus or use ElectionStatus + ServerStatus
     bool alive = true;
     int latency = 0;
-
 
     /* ----------- Attributes ----------- */
 

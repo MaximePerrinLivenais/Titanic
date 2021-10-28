@@ -8,6 +8,11 @@
 
 using namespace message;
 
+namespace process
+{
+    class Process;
+}
+
 namespace rpc
 {
     enum RPC_TYPE
@@ -33,13 +38,13 @@ namespace rpc
 
         static shared_rpc deserialize(const std::string& message);
 
-        void apply_message(Server& server) final;
+        void apply_message(Process& process) final;
 
-        // virtual ~RemoteProcedureCall() = default;
+        // XXX: private to public
+        virtual void apply(Server& server) = 0;
 
     protected:
         json serialize_json() const override;
-        virtual void apply(Server& server) = 0;
 
         const unsigned int term;
         const RPC_TYPE rpc_type;

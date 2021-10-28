@@ -22,9 +22,7 @@ namespace client
 
         static shared_client_msg deserialize(const std::string& message);
 
-        void apply_message(Server& server) final;
-
-        //virtual void send() = 0;
+        void apply_message(Process& process) final;
 
     protected:
         virtual json serialize_json() const = 0;
@@ -33,4 +31,4 @@ namespace client
         const CLIENT_MSG_TYPE client_msg_type;
     };
 
-}
+} // namespace client

@@ -16,7 +16,7 @@ namespace rpc
 
         explicit AppendEntriesResponse(const json& json_obj);
 
-        void apply(Server& server);
+        void apply(Server& server) override;
 
         bool get_success() const;
         unsigned int get_follower_index() const;

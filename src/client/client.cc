@@ -1,29 +1,33 @@
 #include "client.hh"
-#include "mpi.h"
-#include "utils/openmpi/mpi-wrapper.hh"
-#include "repl/repl-message.hh"
-#include "client-response.hh"
-#include <sstream>
 
+#include <iostream>
+#include <sstream>
 #include <unistd.h>
 
-Client::Client(const int server_last_index, unsigned int client_index) :
-    serial_number(0), client_index(client_index), server_last_index(server_last_index)
+#include "client-response.hh"
+#include "mpi.h"
+#include "repl/repl-message.hh"
+#include "utils/openmpi/mpi-wrapper.hh"
+
+Client::Client(const int server_last_index, unsigned int client_index)
+    : serial_number(0)
+    , client_index(client_index)
+    , server_last_index(server_last_index)
 {
     load_clients_command();
 }
 
 void Client::load_clients_command()
 {
-    std::string filename = "client_commands/commands_"
-        + std::to_string(client_index) + ".txt";
+    std::string filename =
+        "client_commands/commands_" + std::to_string(client_index) + ".txt";
 
     MPI_File file;
     MPI_Status status;
     // TODO: Check if it is open
 
-    MPI_File_open(MPI_COMM_SELF, filename.data(),
-            MPI_MODE_RDONLY, MPI_INFO_NULL, &file);
+    MPI_File_open(MPI_COMM_SELF, filename.data(), MPI_MODE_RDONLY,
+                  MPI_INFO_NULL, &file);
 
     MPI_Offset size;
     MPI_File_get_size(file, &size);
@@ -46,17 +50,18 @@ client::ClientRequest Client::create_request(const std::string& command)
 }
 
 void Client::send_request(const client::ClientRequest& request,
-        unsigned int server_index) const
+                          unsigned int server_index) const
 {
     std::string message = request.serialize();
-    MPI_Send(message.data(), message.size(), MPI_CHAR, server_index, 0, MPI_COMM_WORLD);
+    MPI_Send(message.data(), message.size(), MPI_CHAR, server_index, 0,
+             MPI_COMM_WORLD);
 }
 
 void Client::run()
 {
     while (last_recv_request < commands.size())
     {
-        //sleep(1);
+        // sleep(1);
         if (last_send_request == last_recv_request && started)
         {
             // send next request
@@ -67,7 +72,6 @@ void Client::run()
             last_send_request++;
         }
 
-
         auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
         if (query_str_opt.has_value())
         {
@@ -77,7 +81,8 @@ void Client::run()
     }
     std::cout << "Client " << client_index << " finished it's journey\n";
 
-    while(1){}
+    while (1)
+    {}
 }
 
 void Client::handle_message(message::shared_msg query)
@@ -93,7 +98,8 @@ void Client::handle_message(message::shared_msg query)
         auto client_msg = std::dynamic_pointer_cast<client::ClientMsg>(query);
         if (client_msg->get_client_msg_type() == client::CLIENT_RESPONSE)
         {
-            auto client_rsp = std::dynamic_pointer_cast<client::ClientResponse>(client_msg);
+            auto client_rsp =
+                std::dynamic_pointer_cast<client::ClientResponse>(client_msg);
             if (client_rsp->is_success())
             {
                 last_recv_request++;
@@ -101,12 +107,11 @@ void Client::handle_message(message::shared_msg query)
             }
             else
             {
-                // Maybe use the same serial_number 
+                // Maybe use the same serial_number
                 // -1 here because we increment last_send_request on first send
-                auto request = commands[last_send_request-1];
+                auto request = commands[last_send_request - 1];
                 send_request(request, client_rsp->get_leader_id());
             }
         }
-
     }
 }

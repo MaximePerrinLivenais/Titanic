@@ -29,13 +29,12 @@ namespace repl
         // const std::string serialize() const;
         static shared_repl_msg deserialize(const std::string& message);
 
-        void apply_message(Server& server) final;
+        // void apply_message(Process& process) final;
 
         virtual void send() = 0;
 
     protected:
         virtual json serialize_json() const = 0;
-        virtual void apply(Server& server) = 0;
 
         const REPL_MSG_TYPE repl_msg_type;
     };

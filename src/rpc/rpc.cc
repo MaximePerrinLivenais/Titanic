@@ -19,8 +19,11 @@ namespace rpc
         , rpc_type(rpc_type)
     {}
 
-    void RemoteProcedureCall::apply_message(Server& server)
+    void RemoteProcedureCall::apply_message(Process& process)
     {
+        Server& server = dynamic_cast<Server&>(process);
+
+        // TODO: Move the following lines in server method
         if (!server.is_alive())
             return;
 
@@ -38,16 +41,6 @@ namespace rpc
 
         return serialization;
     }
-
-    // const std::string RemoteProcedureCall::serialize() const
-    // {
-    //     json serialization = this->serialize_json();
-
-    //     serialization["term"] = term;
-    //     serialization["rpc_type"] = rpc_type;
-
-    //     return serialization.dump(4);
-    // }
 
     shared_rpc RemoteProcedureCall::deserialize(const std::string& message)
     {

@@ -5,6 +5,12 @@
 
 #include "misc/json.hh"
 
+namespace process
+{
+    class Process;
+}
+using process::Process;
+
 class Server;
 
 namespace message
@@ -31,7 +37,7 @@ namespace message
         virtual const std::string serialize() const;
         static shared_msg deserialize(const std::string& message);
 
-        virtual void apply_message(Server& server) = 0;
+        virtual void apply_message(Process& process) = 0;
 
     private:
         virtual json serialize_json() const = 0;
