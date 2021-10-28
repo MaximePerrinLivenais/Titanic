@@ -52,7 +52,6 @@ namespace rpc
 
     void RequestVoteRPC::apply(Server& server)
     {
-        std::cout << "I apply a request vote" << std::endl;
         server.on_request_vote_rpc(*this);
     }
 } // namespace rpc

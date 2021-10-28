@@ -602,7 +602,7 @@ void Server::on_client_request(const client::ClientRequest& request)
     }
 }
 
-void Server::handle_rpc_message(rpc::RemoteProcedureCall& rpc)
+void Server::on_rpc(rpc::RemoteProcedureCall& rpc)
 {
     if (!alive)
         return;
@@ -614,11 +614,6 @@ void Server::handle_rpc_message(rpc::RemoteProcedureCall& rpc)
     }
 
     rpc.apply(*this);
-}
-
-void Server::handle_client_message(client::ClientMsg& message)
-{
-    abort();
 }
 
 ServerStatus Server::get_status() const

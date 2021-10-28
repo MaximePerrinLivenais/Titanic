@@ -23,7 +23,6 @@ namespace rpc
 
     void AppendEntriesResponse::apply(Server& server)
     {
-        std::cout << "Apply appending entries response" << std::endl;
         server.on_append_entries_response(*this);
     }
 

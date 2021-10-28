@@ -19,7 +19,6 @@ RequestVoteResponse::RequestVoteResponse(const json& json_obj)
 
 void RequestVoteResponse::apply(Server& server)
 {
-    std::cout << "I apply a request vote response" << std::endl;
     server.on_request_vote_response(*this);
 }
 

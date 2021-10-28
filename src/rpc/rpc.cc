@@ -22,14 +22,7 @@ namespace rpc
     void RemoteProcedureCall::apply_message(Process& process)
     {
         Server& server = dynamic_cast<Server&>(process);
-
-        // TODO: Move the following lines in server method
-        if (!server.is_alive())
-            return;
-
-        server.update_term(term);
-
-        this->apply(server);
+        server.on_rpc(*this);
     }
 
     json RemoteProcedureCall::serialize_json() const

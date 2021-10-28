@@ -35,6 +35,9 @@ public:
     void on_request_vote_response(const rpc::RequestVoteResponse& rpc);
     void on_client_request(const client::ClientRequest& request);
 
+    // Server rpc callback
+    void on_rpc(rpc::RemoteProcedureCall& rpc);
+
     bool is_alive() const;
     void crash();
     void change_speed(repl::ServerSpeed speed);
