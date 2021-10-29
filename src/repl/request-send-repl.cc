@@ -17,6 +17,7 @@ namespace repl
 
     void RequestSendREPL::send()
     {
+        std::cout << "SEND send\n";
         const std::string msg_serialized = serialize();
 
         MPI_Send(msg_serialized.c_str(), msg_serialized.length(), MPI_CHAR,

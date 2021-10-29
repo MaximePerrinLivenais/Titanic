@@ -53,7 +53,7 @@ namespace repl
             std::cin >> process_target;
             return std::make_shared<RequestStartREPL>(process_target);
         }
-        else if (command_name == "REPL")
+        else if (command_name == "SEND")
         {
             unsigned int process_target;
             std::cin >> process_target;
@@ -73,7 +73,6 @@ namespace repl
         while (true)
         {
             auto msg = build_message_from_input();
-
             if (msg.has_value())
             {
                 msg.value()->send();

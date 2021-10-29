@@ -11,8 +11,35 @@ Client::Client(const int server_last_index, unsigned int client_index) :
     serial_number(0), client_index(client_index), server_last_index(server_last_index)
 {
     load_clients_command();
+
+    // TODO: use mt19937 instead
+    srand(time(0) + client_index);
+    last_known_leader = (rand() % server_last_index) + 1;
 }
 
+
+void Client::run()
+{
+    while (next_request < commands.size())
+    {
+        //sleep(1);
+        if (started && next_request == next_response)
+            send_next_request();
+
+
+        auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
+        if (query_str_opt.has_value())
+        {
+            auto query = message::Message::deserialize(query_str_opt.value());
+            process_message(query);
+        }
+    }
+    std::cout << "Client " << client_index << " finished it's journey\n";
+
+    while(1){}
+}
+
+/* ---------------------- Request creation and load ------------------------- */
 void Client::load_clients_command()
 {
     std::string filename = "client_commands/commands_"
@@ -45,68 +72,77 @@ client::ClientRequest Client::create_request(const std::string& command)
     return client::ClientRequest(command, serial_number, client_index);
 }
 
+
+
+
+/* --------------------------- Send request --------------------------------- */
 void Client::send_request(const client::ClientRequest& request,
         unsigned int server_index) const
 {
+    std::cout << "Client n" << client_index << " send message to server n" << server_index << "\n";
     std::string message = request.serialize();
     MPI_Send(message.data(), message.size(), MPI_CHAR, server_index, 0, MPI_COMM_WORLD);
 }
 
-void Client::run()
+void Client::send_next_request()
 {
-    while (last_recv_request < commands.size())
+    std::cout << "send next\n";
+    if (next_request > next_response + 1)
     {
-        //sleep(1);
-        if (last_send_request == last_recv_request && started)
-        {
-            // send next request
-            std::cout << "Send request " << last_send_request << "\n";
-            auto request = commands[last_send_request];
-            int server_index = 1; // TODO: choose randomly
-            send_request(request, server_index);
-            last_send_request++;
-        }
-
-
-        auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
-        if (query_str_opt.has_value())
-        {
-            auto query = message::Message::deserialize(query_str_opt.value());
-            handle_message(query);
-        }
+        std::cout << "Waiting for previous request to get a response\n";
+        return;
     }
-    std::cout << "Client " << client_index << " finished it's journey\n";
 
-    while(1){}
+    std::cout << "afetr if\n";
+    auto request = commands[next_request];
+    send_request(request, last_known_leader);
+    next_request++;
 }
 
-void Client::handle_message(message::shared_msg query)
+void Client::send_again()
 {
-    if (query->get_msg_type() == REPL_MESSAGE)
-    {
-        auto repl_msg = std::dynamic_pointer_cast<repl::ReplMsg>(query);
-        if (repl_msg->get_repl_msg_type() == repl::START)
-            started = true;
-    }
-    else if (query->get_msg_type() == CLIENT_MESSAGE)
-    {
-        auto client_msg = std::dynamic_pointer_cast<client::ClientMsg>(query);
-        if (client_msg->get_client_msg_type() == client::CLIENT_RESPONSE)
-        {
-            auto client_rsp = std::dynamic_pointer_cast<client::ClientResponse>(client_msg);
-            if (client_rsp->is_success())
-            {
-                last_recv_request++;
-                std::cout << "Recv response : " << last_recv_request << "\n";
-            }
-            else
-            {
-                // Maybe use the same serial_number 
-                // -1 here because we increment last_send_request on first send
-                auto request = commands[last_send_request-1];
-                send_request(request, client_rsp->get_leader_id());
-            }
-        }
+    auto request = commands[next_response];
+    send_request(request, last_known_leader);
+}
 
+
+/* ---------------------- Process received message -------------------------- */
+void Client::process_message(message::shared_msg message)
+{
+    if (message->get_msg_type() == REPL_MESSAGE)
+        process_repl_message(message);
+    else if (message->get_msg_type() == CLIENT_MESSAGE)
+        process_client_message(message);
+}
+
+void Client::process_repl_message(message::shared_msg message)
+{
+    auto repl_msg = std::dynamic_pointer_cast<repl::ReplMsg>(message);
+
+    std::cout << "Repl blabla\n";
+    if (repl_msg->get_repl_msg_type() == repl::START)
+        started = true;
+    else if (repl_msg->get_repl_msg_type() == repl::SEND)
+        send_next_request();
+}
+
+void Client::process_client_message(message::shared_msg message)
+{
+    auto client_msg = std::dynamic_pointer_cast<client::ClientMsg>(message);
+
+    if (client_msg->get_client_msg_type() != client::CLIENT_RESPONSE)
+        return;
+
+
+    auto client_rsp = std::dynamic_pointer_cast<client::ClientResponse>(client_msg);
+    if (client_rsp->is_success())
+    {
+        next_response++;
+        std::cout << "Recv response : " << next_request << "\n";
+    }
+    else
+    {
+        last_known_leader = client_rsp->get_leader_id();
+        send_again();
     }
 }
