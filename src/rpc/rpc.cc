@@ -19,7 +19,7 @@ namespace rpc
         , rpc_type(rpc_type)
     {}
 
-    void RemoteProcedureCall::apply_message(Process& process)
+    void RemoteProcedureCall::apply(Process& process)
     {
         Server& server = dynamic_cast<Server&>(process);
         server.on_rpc(*this);

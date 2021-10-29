@@ -38,7 +38,7 @@ namespace rpc
 
         static shared_rpc deserialize(const std::string& message);
 
-        void apply_message(Process& process) final;
+        void apply(Process& process) final;
 
         // XXX: private to public
         virtual void apply(Server& server) = 0;

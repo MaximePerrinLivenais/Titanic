@@ -32,7 +32,7 @@ namespace repl
         return serialization;
     }
 
-    void RequestStartREPL::apply_message([[maybe_unused]] Process& process)
+    void RequestStartREPL::apply([[maybe_unused]] Process& process)
     {
         // FIXME apply start message on process
         return;

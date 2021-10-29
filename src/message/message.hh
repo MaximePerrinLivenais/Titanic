@@ -37,7 +37,7 @@ namespace message
         virtual const std::string serialize() const;
         static shared_msg deserialize(const std::string& message);
 
-        virtual void apply_message(Process& process) = 0;
+        virtual void apply(Process& process) = 0;
 
     private:
         virtual json serialize_json() const = 0;

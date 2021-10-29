@@ -13,7 +13,7 @@ namespace repl
 
         void send();
 
-        void apply_message(Process& process) final;
+        void apply(Process& process) final;
 
     private:
         json serialize_json() const;

@@ -35,7 +35,7 @@ namespace repl
         return serialization;
     }
 
-    void RequestSpeedREPL::apply_message(Process& process)
+    void RequestSpeedREPL::apply(Process& process)
     {
         Server& server = dynamic_cast<Server&>(process);
         server.change_speed(speed);

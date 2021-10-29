@@ -58,7 +58,7 @@ void Server::run()
             // In the case of repl -> apply directly
             // XXX: apply message for CRASHED server only if from REPL
 
-            query->apply_message(*this);
+            query->apply(*this);
 
             // std::cout << "My status is: " << current_status << std::endl;
 

@@ -5,23 +5,12 @@
 #include "request-speed-repl.hh"
 #include "request-start-repl.hh"
 
-// TODO remove header
-#include <iostream>
-
 namespace repl
 {
     ReplMsg::ReplMsg(const REPL_MSG_TYPE repl_type)
         : Message(MSG_TYPE::REPL_MESSAGE)
         , repl_msg_type(repl_type)
     {}
-
-    // void ReplMsg::apply_message(Process& process)
-    // {
-    //     auto& server = dynamic_cast<Server&>(process);
-
-    //     std::cout << "I apply a repl message\n";
-    //     this->apply(server);
-    // }
 
     json ReplMsg::serialize_json() const
     {

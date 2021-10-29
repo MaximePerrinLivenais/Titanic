@@ -85,13 +85,18 @@ void Client::run()
     {}
 }
 
+void Client::on_repl_start()
+{
+    started = true;
+}
+
 void Client::handle_message(message::shared_msg query)
 {
     if (query->get_msg_type() == REPL_MESSAGE)
     {
         auto repl_msg = std::dynamic_pointer_cast<repl::ReplMsg>(query);
         if (repl_msg->get_repl_msg_type() == repl::START)
-            started = true;
+            on_repl_start();
     }
     else if (query->get_msg_type() == CLIENT_MESSAGE)
     {

@@ -13,7 +13,7 @@ namespace client
         , client_msg_type(client_type)
     {}
 
-    void ClientMsg::apply_message(Process& process)
+    void ClientMsg::apply(Process& process)
     {
         auto& server = dynamic_cast<Server&>(process);
 

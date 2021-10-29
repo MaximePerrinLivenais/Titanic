@@ -11,7 +11,7 @@ namespace repl
 
         explicit RequestStartREPL(const json& json_obj);
 
-        void apply_message(Process& process) final;
+        void apply(Process& process) final;
 
         void send();
 
