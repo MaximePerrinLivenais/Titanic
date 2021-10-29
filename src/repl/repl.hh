@@ -2,13 +2,6 @@
 
 namespace repl
 {
-    enum ServerSpeed
-    {
-        LOW,
-        MEDIUM,
-        HIGH
-    };
-
     class REPL
     {
     public:
@@ -16,9 +9,6 @@ namespace repl
 
         void run();
 
-        // void send_crash_request();
-
     private:
-        // XXX: List of Process (Server + client)
     };
 } // namespace repl

@@ -8,6 +8,7 @@
 #include "request-crash-repl.hh"
 #include "request-start-repl.hh"
 #include "request-speed-repl.hh"
+#include "server-speed.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
 namespace repl

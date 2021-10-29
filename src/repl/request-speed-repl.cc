@@ -16,14 +16,10 @@ namespace repl
         : RequestSpeedREPL(json_obj["target_process"], json_obj["speed"])
     {}
 
-    void RequestSpeedREPL::send()
+    void RequestSpeedREPL::apply(process::Process& process)
     {
-        // TODO: move this function to ReplMsg as it is the same for the 3
-        // children class
-        const std::string msg_serialized = serialize();
-
-        MPI_Send(msg_serialized.c_str(), msg_serialized.length(), MPI_CHAR,
-                 target_process, 0, MPI_COMM_WORLD);
+        auto& server = dynamic_cast<raft::Server&>(process);
+        server.on_repl_speed(*this);
     }
 
     json RequestSpeedREPL::serialize_json() const
@@ -35,9 +31,18 @@ namespace repl
         return serialization;
     }
 
-    void RequestSpeedREPL::apply(Process& process)
+    ServerSpeed RequestSpeedREPL::get_speed() const
     {
-        Server& server = dynamic_cast<Server&>(process);
-        server.change_speed(speed);
+        return speed;
+    }
+
+    void RequestSpeedREPL::send()
+    {
+        // TODO: move this function to ReplMsg as it is the same for the 3
+        // children class
+        const std::string msg_serialized = serialize();
+
+        MPI_Send(msg_serialized.c_str(), msg_serialized.length(), MPI_CHAR,
+                 target_process, 0, MPI_COMM_WORLD);
     }
 } // namespace repl

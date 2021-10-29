@@ -1,17 +1,22 @@
 CXX = mpic++
-CXXFLAGS = -std=c++20 -Wall -Werror -Wextra -pedantic -g
+CXXFLAGS = -std=c++20 -Wall -Wextra -pedantic -g
 CPPFLAGS = -Isrc -Ilib
 
 TARGET = titanic
 
-RPC = \
-	src/message/message.cc \
-        src/rpc/append-entries.cc \
-        src/rpc/append-entries-response.cc \
-        src/rpc/request-vote.cc \
-        src/rpc/request-vote-response.cc \
-        src/rpc/rpc.cc \
-        src/rpc/log-entry.cc \
+CLIENT = \
+         src/client/client.cc \
+         src/client/client-message.cc \
+         src/client/client-request.cc \
+         src/client/client-response.cc \
+         $(NULL)
+
+MESSAGE = \
+            src/message/message.cc \
+            $(NULL)
+
+RAFT = \
+        src/raft/server.cc \
         $(NULL)
 
 REPL = \
@@ -22,32 +27,28 @@ REPL = \
         src/repl/request-speed-repl.cc \
         $(NULL)
 
-
-CLIENT = \
-         src/client/client.cc \
-         src/client/client-message.cc \
-         src/client/client-request.cc \
-         src/client/client-response.cc \
-         $(NULL)
-
-
-
-UTILS = \
-        src/utils/openmpi/mpi-wrapper.cc \
-		src/utils/chrono/chrono.cc \
+RPC = \
+        src/rpc/append-entries.cc \
+        src/rpc/append-entries-response.cc \
+        src/rpc/log-entry.cc \
+        src/rpc/request-vote.cc \
+        src/rpc/request-vote-response.cc \
+        src/rpc/rpc.cc \
         $(NULL)
 
-RAFT = \
-		src/raft/server.cc \
-		$(NULL)
+UTILS = \
+        src/utils/chrono/chrono.cc \
+        src/utils/openmpi/mpi-wrapper.cc \
+        $(NULL)
 
 SRC =  \
         src/main.cc \
-        $(RPC) \
-        $(REPL) \
-        $(UTILS) \
         $(CLIENT) \
+        $(MESSAGE) \
         $(RAFT) \
+        $(REPL) \
+        $(RPC) \
+        $(UTILS) \
         $(NULL)
 
 OBJS = $(SRC:.cc=.o)

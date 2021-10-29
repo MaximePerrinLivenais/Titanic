@@ -1,19 +1,9 @@
 #pragma once
 
-#include <string>
-
 #include "client/client-message.hh"
 
 namespace client
 {
-    // XXX: maybe thinks about hierarchy of different messages
-    //
-    //          - REPL
-    //         |
-    // Message - RPC -> Append, Request, ....
-    //         |
-    //          - Client message
-    //
     class ClientRequest : public ClientMsg
     {
     public:
@@ -22,7 +12,7 @@ namespace client
                                unsigned int client_index);
         explicit ClientRequest(const json& json_obj);
 
-        void apply(Process& process) final;
+        void apply(process::Process& process) final;
 
         std::string get_command() const;
         unsigned int get_serial_number() const;

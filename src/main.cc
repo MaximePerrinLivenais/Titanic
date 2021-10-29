@@ -1,9 +1,7 @@
 #include <iostream>
 
 #include "client/client.hh"
-#include "mpi.h"
 #include "raft/server.hh"
-#include "raft/status.hh"
 #include "repl/repl.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
@@ -22,7 +20,7 @@ int main(int argc, char* argv[])
     else if (rank >= 1 && rank <= nb_servers)
     {
         std::cout << "Hi, I am rank: " << rank << std::endl;
-        auto server = Server(rank, nb_servers);
+        auto server = raft::Server(rank, nb_servers);
         server.run();
     }
     else

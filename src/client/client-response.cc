@@ -18,9 +18,10 @@ namespace client
                          json_obj["leader_id"])
     {}
 
-    ClientResponse ClientResponse::not_a_leader_response(unsigned int leader_id)
+    void ClientResponse::apply(process::Process& process)
     {
-        return ClientResponse(0, false, leader_id);
+        auto& client = dynamic_cast<Client&>(process);
+        client.on_client_response(*this);
     }
 
     json ClientResponse::serialize_json() const
@@ -34,10 +35,9 @@ namespace client
         return serialization;
     }
 
-    void ClientResponse::apply(Process& process)
+    ClientResponse ClientResponse::not_a_leader_response(unsigned int leader_id)
     {
-        auto& client = dynamic_cast<Client&>(process);
-        client.on_client_response(*this);
+        return ClientResponse(0, false, leader_id);
     }
 
     bool ClientResponse::is_success() const

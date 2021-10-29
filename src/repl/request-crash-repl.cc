@@ -15,12 +15,10 @@ namespace repl
         , target_process(json_obj["target_process"])
     {}
 
-    void RequestCrashREPL::send()
+    void RequestCrashREPL::apply(process::Process& process)
     {
-        const std::string msg_serialized = serialize();
-
-        MPI_Send(msg_serialized.c_str(), msg_serialized.length(), MPI_CHAR,
-                 target_process, 0, MPI_COMM_WORLD);
+        auto& server = dynamic_cast<raft::Server&>(process);
+        server.on_repl_crash();
     }
 
     json RequestCrashREPL::serialize_json() const
@@ -31,10 +29,11 @@ namespace repl
         return serialization;
     }
 
-    void RequestCrashREPL::apply(Process& process)
+    void RequestCrashREPL::send()
     {
-        Server& server = dynamic_cast<Server&>(process);
-        server.crash();
-    }
+        const std::string msg_serialized = serialize();
 
+        MPI_Send(msg_serialized.c_str(), msg_serialized.length(), MPI_CHAR,
+                 target_process, 0, MPI_COMM_WORLD);
+    }
 } // namespace repl

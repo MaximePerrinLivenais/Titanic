@@ -1,7 +1,6 @@
 #include "request-start-repl.hh"
 
 #include "client/client.hh"
-#include "raft/server.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
 namespace repl
@@ -16,13 +15,10 @@ namespace repl
         , target_process(json_obj["target_process"])
     {}
 
-    void RequestStartREPL::send()
+    void RequestStartREPL::apply(process::Process& process)
     {
-        // TODO: move to ReplMsg
-        const std::string msg_serialized = serialize();
-
-        MPI_Send(msg_serialized.c_str(), msg_serialized.length(), MPI_CHAR,
-                 target_process, 0, MPI_COMM_WORLD);
+        auto& client = dynamic_cast<client::Client&>(process);
+        client.on_repl_start();
     }
 
     json RequestStartREPL::serialize_json() const
@@ -33,9 +29,12 @@ namespace repl
         return serialization;
     }
 
-    void RequestStartREPL::apply(Process& process)
+    void RequestStartREPL::send()
     {
-        auto& client = dynamic_cast<client::Client&>(process);
-        client.on_repl_start();
+        // TODO: move to ReplMsg
+        const std::string msg_serialized = serialize();
+
+        MPI_Send(msg_serialized.c_str(), msg_serialized.length(), MPI_CHAR,
+                 target_process, 0, MPI_COMM_WORLD);
     }
 } // namespace repl

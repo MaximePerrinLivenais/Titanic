@@ -4,8 +4,6 @@
 #include <sstream>
 #include <unistd.h>
 
-#include "mpi.h"
-#include "repl/repl-message.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
 namespace client
@@ -16,46 +14,6 @@ namespace client
         , server_last_index(server_last_index)
     {
         load_clients_command();
-    }
-
-    void Client::load_clients_command()
-    {
-        std::string filename =
-            "client_commands/commands_" + std::to_string(client_index) + ".txt";
-
-        MPI_File file;
-        MPI_Status status;
-        // TODO: Check if it is open
-
-        MPI_File_open(MPI_COMM_SELF, filename.data(), MPI_MODE_RDONLY,
-                      MPI_INFO_NULL, &file);
-
-        MPI_Offset size;
-        MPI_File_get_size(file, &size);
-
-        std::vector<char> buf = std::vector<char>(size);
-        MPI_File_read(file, buf.data(), size, MPI_CHAR, &status);
-
-        std::string commands_data(buf.begin(), buf.end());
-        std::stringstream stream(commands_data);
-
-        std::string line;
-        while (std::getline(stream, line))
-            commands.push_back(create_request(line));
-    }
-
-    client::ClientRequest Client::create_request(const std::string& command)
-    {
-        serial_number++;
-        return ClientRequest(command, serial_number, client_index);
-    }
-
-    void Client::send_request(const client::ClientRequest& request,
-                              unsigned int server_index) const
-    {
-        std::string message = request.serialize();
-        MPI_Send(message.data(), message.size(), MPI_CHAR, server_index, 0,
-                 MPI_COMM_WORLD);
     }
 
     void Client::run()
@@ -91,7 +49,7 @@ namespace client
         started = true;
     }
 
-    void Client::on_client_response(client::ClientResponse& client_rsp)
+    void Client::on_client_response(const client::ClientResponse& client_rsp)
     {
         if (client_rsp.is_success())
         {
@@ -105,5 +63,45 @@ namespace client
             auto request = commands[last_send_request - 1];
             send_request(request, client_rsp.get_leader_id());
         }
+    }
+
+    client::ClientRequest Client::create_request(const std::string& command)
+    {
+        serial_number++;
+        return ClientRequest(command, serial_number, client_index);
+    }
+
+    void Client::send_request(const client::ClientRequest& request,
+                              unsigned int server_index) const
+    {
+        std::string message = request.serialize();
+        MPI_Send(message.data(), message.size(), MPI_CHAR, server_index, 0,
+                 MPI_COMM_WORLD);
+    }
+
+    void Client::load_clients_command()
+    {
+        std::string filename =
+            "client_commands/commands_" + std::to_string(client_index) + ".txt";
+
+        MPI_File file;
+        MPI_Status status;
+        // TODO: Check if it is open
+
+        MPI_File_open(MPI_COMM_SELF, filename.data(), MPI_MODE_RDONLY,
+                      MPI_INFO_NULL, &file);
+
+        MPI_Offset size;
+        MPI_File_get_size(file, &size);
+
+        std::vector<char> buf = std::vector<char>(size);
+        MPI_File_read(file, buf.data(), size, MPI_CHAR, &status);
+
+        std::string commands_data(buf.begin(), buf.end());
+        std::stringstream stream(commands_data);
+
+        std::string line;
+        while (std::getline(stream, line))
+            commands.push_back(create_request(line));
     }
 }

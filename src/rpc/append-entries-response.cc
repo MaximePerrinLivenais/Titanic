@@ -21,9 +21,20 @@ namespace rpc
                                 json_obj["last_log_index"])
     {}
 
-    void AppendEntriesResponse::apply(Server& server)
+    void AppendEntriesResponse::apply(raft::Server& server)
     {
         server.on_append_entries_response(*this);
+    }
+
+    json AppendEntriesResponse::serialize_json() const
+    {
+        json serialization = RemoteProcedureCall::serialize_json();
+
+        serialization["success"] = success;
+        serialization["follower_index"] = follower_index;
+        serialization["last_log_index"] = last_log_index;
+
+        return serialization;
     }
 
     bool AppendEntriesResponse::get_success() const
@@ -39,16 +50,5 @@ namespace rpc
     int AppendEntriesResponse::get_last_log_index() const
     {
         return last_log_index;
-    }
-
-    json AppendEntriesResponse::serialize_json() const
-    {
-        json serialization = RemoteProcedureCall::serialize_json();
-
-        serialization["success"] = success;
-        serialization["follower_index"] = follower_index;
-        serialization["last_log_index"] = last_log_index;
-
-        return serialization;
     }
 } // namespace rpc

@@ -1,6 +1,5 @@
 #include "repl-message.hh"
 
-#include "raft/server.hh"
 #include "request-crash-repl.hh"
 #include "request-speed-repl.hh"
 #include "request-start-repl.hh"
@@ -26,7 +25,6 @@ namespace repl
         auto json_obj = json::parse(message);
         auto repl_msg_type = json_obj["repl_msg_type"].get<REPL_MSG_TYPE>();
 
-        // TODO construct right object here
         switch (repl_msg_type)
         {
         case SPEED:

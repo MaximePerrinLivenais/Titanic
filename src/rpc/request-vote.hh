@@ -14,11 +14,11 @@ namespace rpc
 
         explicit RequestVoteRPC(const json& json_obj);
 
+        void apply(raft::Server& server) override;
+
         unsigned int get_candidate_id() const;
         int get_last_log_index() const;
         int get_last_log_term() const;
-
-        void apply(Server& server) override;
 
     private:
         json serialize_json() const override;

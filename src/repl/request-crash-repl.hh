@@ -8,12 +8,11 @@ namespace repl
     {
     public:
         explicit RequestCrashREPL(unsigned int target_process);
-
         explicit RequestCrashREPL(const json& json_obj);
 
-        void send();
+        void apply(process::Process& process) final;
 
-        void apply(Process& process) final;
+        void send();
 
     private:
         json serialize_json() const;

@@ -2,11 +2,11 @@
 
 #include <iostream>
 
-#include "append-entries-response.hh"
 #include "append-entries.hh"
-#include "raft/server.hh"
-#include "request-vote-response.hh"
+#include "append-entries-response.hh"
 #include "request-vote.hh"
+#include "request-vote-response.hh"
+#include "raft/server.hh"
 
 using namespace message;
 
@@ -19,9 +19,9 @@ namespace rpc
         , rpc_type(rpc_type)
     {}
 
-    void RemoteProcedureCall::apply(Process& process)
+    void RemoteProcedureCall::apply(process::Process& process)
     {
-        Server& server = dynamic_cast<Server&>(process);
+        auto& server = dynamic_cast<raft::Server&>(process);
         server.on_rpc(*this);
     }
 

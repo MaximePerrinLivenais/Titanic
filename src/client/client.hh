@@ -1,25 +1,30 @@
 #pragma once
 
+#include <vector>
+
 #include "client-response.hh"
-#include "client/client-request.hh"
 #include "process/process.hh"
+
+// XXX: A rm quand plus besoin de send_request
+#include "client/client-request.hh"
 
 namespace client
 {
-    class Client : public Process
+    class Client : public process::Process
     {
     public:
         Client(const int server_last_index, unsigned int client_index);
 
-        client::ClientRequest create_request(const std::string& command);
-        void send_request(const client::ClientRequest& request,
-                          unsigned int server_index) const;
+        void run();
 
         // Message callbck
         void on_repl_start();
-        void on_client_response(client::ClientResponse& client_rsp);
+        void on_client_response(const client::ClientResponse& client_rsp);
 
-        void run();
+
+        client::ClientRequest create_request(const std::string& command);
+        void send_request(const client::ClientRequest& request,
+                          unsigned int server_index) const;
 
     private:
         void load_clients_command();

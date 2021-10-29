@@ -4,7 +4,6 @@
 
 #include "client-request.hh"
 #include "client-response.hh"
-#include "raft/server.hh"
 
 namespace client
 {

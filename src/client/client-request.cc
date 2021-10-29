@@ -18,6 +18,12 @@ namespace client
                         json_obj["client_index"])
     {}
 
+    void ClientRequest::apply(process::Process& process)
+    {
+        auto& server = dynamic_cast<raft::Server&>(process);
+        server.on_client_request(*this);
+    }
+
     json ClientRequest::serialize_json() const
     {
         json serialization = ClientMsg::serialize_json();
@@ -27,12 +33,6 @@ namespace client
         serialization["client_index"] = client_index;
 
         return serialization;
-    }
-
-    void ClientRequest::apply(Process& process)
-    {
-        auto& server = dynamic_cast<Server&>(process);
-        server.on_client_request(*this);
     }
 
     std::string ClientRequest::get_command() const

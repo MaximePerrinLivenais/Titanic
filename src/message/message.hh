@@ -4,27 +4,20 @@
 #include <string>
 
 #include "misc/json.hh"
-
-namespace process
-{
-    class Process;
-}
-using process::Process;
-
-class Server;
+#include "process/process.hh"
 
 namespace message
 {
-    class Message;
-
-    using shared_msg = std::shared_ptr<Message>;
-
     enum MSG_TYPE
     {
         RPC_MESSAGE,
         REPL_MESSAGE,
         CLIENT_MESSAGE
     };
+
+    class Message;
+
+    using shared_msg = std::shared_ptr<Message>;
 
     class Message
     {
@@ -37,7 +30,7 @@ namespace message
         virtual const std::string serialize() const;
         static shared_msg deserialize(const std::string& message);
 
-        virtual void apply(Process& process) = 0;
+        virtual void apply(process::Process& process) = 0;
 
     private:
         virtual json serialize_json() const = 0;

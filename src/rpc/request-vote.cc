@@ -1,11 +1,8 @@
 #include "request-vote.hh"
 
 #include <iostream>
-#include <mpi.h>
 
 #include "raft/server.hh"
-#include "raft/status.hh"
-#include "rpc/request-vote-response.hh"
 
 namespace rpc
 {
@@ -23,6 +20,11 @@ namespace rpc
         : RequestVoteRPC(json_obj["term"], json_obj["candidate_id"],
                          json_obj["last_log_index"], json_obj["last_log_term"])
     {}
+
+    void RequestVoteRPC::apply(raft::Server& server)
+    {
+        server.on_request_vote_rpc(*this);
+    }
 
     json RequestVoteRPC::serialize_json() const
     {
@@ -48,10 +50,5 @@ namespace rpc
     int RequestVoteRPC::get_last_log_term() const
     {
         return last_log_term;
-    }
-
-    void RequestVoteRPC::apply(Server& server)
-    {
-        server.on_request_vote_rpc(*this);
     }
 } // namespace rpc

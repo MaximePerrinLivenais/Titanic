@@ -1,26 +1,26 @@
 #pragma once
 
 #include "repl-message.hh"
-#include "repl.hh"
+#include "server-speed.hh"
 
 namespace repl
 {
     class RequestSpeedREPL : public ReplMsg
     {
     public:
-        explicit RequestSpeedREPL(unsigned int target_process,
-                                  ServerSpeed speed);
-
+        explicit RequestSpeedREPL(unsigned int target_process, ServerSpeed speed);
         explicit RequestSpeedREPL(const json& json_obj);
+
+        void apply(process::Process& process) final;
 
         void send();
 
-        void apply(Process& process) final;
+        ServerSpeed get_speed() const;
 
     private:
         json serialize_json() const;
 
-        unsigned int target_process;
-        ServerSpeed speed;
+        const unsigned int target_process;
+        const ServerSpeed speed;
     };
 } // namespace repl

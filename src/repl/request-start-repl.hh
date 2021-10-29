@@ -8,10 +8,9 @@ namespace repl
     {
     public:
         explicit RequestStartREPL(unsigned int target_process);
-
         explicit RequestStartREPL(const json& json_obj);
 
-        void apply(Process& process) final;
+        void apply(process::Process& process) final;
 
         void send();
 

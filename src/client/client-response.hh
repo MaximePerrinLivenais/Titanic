@@ -11,12 +11,12 @@ namespace client
                                 unsigned int leader_id);
         explicit ClientResponse(const json& json_obj);
 
-        static ClientResponse not_a_leader_response(unsigned int leader_id);
-
-        void apply(Process& process) final;
+        void apply(process::Process& process) final;
 
         bool is_success() const;
         unsigned int get_leader_id() const;
+
+        static ClientResponse not_a_leader_response(unsigned int leader_id);
 
     private:
         json serialize_json() const;
