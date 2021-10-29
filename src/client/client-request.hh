@@ -1,11 +1,11 @@
 #pragma once
 
 #include <string>
+
 #include "client/client-message.hh"
 
 namespace client
 {
-
     // XXX: maybe thinks about hierarchy of different messages
     //
     //          - REPL
@@ -18,11 +18,11 @@ namespace client
     {
     public:
         explicit ClientRequest(const std::string& command,
-                unsigned int serial_number, unsigned int client_index);
+                               unsigned int serial_number,
+                               unsigned int client_index);
         explicit ClientRequest(const json& json_obj);
 
-
-        void apply(Server &server) final;
+        void apply(Process& process) final;
 
         std::string get_command() const;
         unsigned int get_serial_number() const;
@@ -36,4 +36,4 @@ namespace client
         const unsigned int client_index;
     };
 
-}
+} // namespace client

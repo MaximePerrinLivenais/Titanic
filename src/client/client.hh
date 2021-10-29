@@ -1,8 +1,10 @@
 #pragma once
 
+#include "client-response.hh"
 #include "client/client-request.hh"
+#include "process/process.hh"
 
-class Client
+class Client : public Process
 {
 public:
     Client(const int server_last_index, unsigned int client_index);
@@ -11,19 +13,20 @@ public:
     void send_request(const client::ClientRequest& request,
                       unsigned int server_index) const;
 
+    // Message callbck
+    void on_repl_start();
+    void on_client_response(client::ClientResponse& client_rsp);
+
     void run();
 
 private:
     void load_clients_command();
-    void handle_message(message::shared_msg query);
+
     // XXX: map between serial_number and ClientRequest to tracks sent request
     // and remove them when answered
     unsigned int serial_number;
     const unsigned int client_index;
     const int server_last_index;
-
-    // Message callback
-    void on_repl_start();
 
     // TODO: pass to false + use REPL START
     bool started = false;

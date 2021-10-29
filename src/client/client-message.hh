@@ -22,11 +22,8 @@ namespace client
 
         static shared_client_msg deserialize(const std::string& message);
 
-        void apply(Process& process) final;
-
     protected:
         virtual json serialize_json() const = 0;
-        virtual void apply(Server& server) = 0;
 
         const CLIENT_MSG_TYPE client_msg_type;
     };

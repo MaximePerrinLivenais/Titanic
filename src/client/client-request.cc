@@ -1,21 +1,22 @@
 #include "client-request.hh"
+
 #include "raft/server.hh"
 
 namespace client
 {
     ClientRequest::ClientRequest(const std::string& command,
-                unsigned int serial_number, unsigned int client_index):
-        ClientMsg(CLIENT_MSG_TYPE::CLIENT_REQUEST),
-        command(command), serial_number(serial_number), client_index(client_index)
-    {
-    }
+                                 unsigned int serial_number,
+                                 unsigned int client_index)
+        : ClientMsg(CLIENT_MSG_TYPE::CLIENT_REQUEST)
+        , command(command)
+        , serial_number(serial_number)
+        , client_index(client_index)
+    {}
 
-
-    ClientRequest::ClientRequest(const json& json_obj):
-        ClientRequest(json_obj["command"], json_obj["serial_number"], json_obj["client_index"])
-    {
-    }
-
+    ClientRequest::ClientRequest(const json& json_obj)
+        : ClientRequest(json_obj["command"], json_obj["serial_number"],
+                        json_obj["client_index"])
+    {}
 
     json ClientRequest::serialize_json() const
     {
@@ -28,8 +29,9 @@ namespace client
         return serialization;
     }
 
-    void ClientRequest::apply(Server &server)
+    void ClientRequest::apply(Process& process)
     {
+        auto& server = dynamic_cast<Server&>(process);
         server.on_client_request(*this);
     }
 
@@ -47,4 +49,4 @@ namespace client
     {
         return client_index;
     }
-}
+} // namespace client

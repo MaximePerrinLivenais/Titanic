@@ -13,14 +13,6 @@ namespace client
         , client_msg_type(client_type)
     {}
 
-    void ClientMsg::apply(Process& process)
-    {
-        auto& server = dynamic_cast<Server&>(process);
-
-        // process.handle_client_message(*this);
-        this->apply(server);
-    }
-
     json ClientMsg::serialize_json() const
     {
         json serialization = json();

@@ -1,15 +1,21 @@
 #include "client-response.hh"
+
+#include "client/client.hh"
 #include "raft/server.hh"
 
 namespace client
 {
-    ClientResponse::ClientResponse(int result, bool success, unsigned int leader_id) :
-        ClientMsg(CLIENT_MSG_TYPE::CLIENT_RESPONSE), result(result),
-        success(success), leader_id(leader_id)
+    ClientResponse::ClientResponse(int result, bool success,
+                                   unsigned int leader_id)
+        : ClientMsg(CLIENT_MSG_TYPE::CLIENT_RESPONSE)
+        , result(result)
+        , success(success)
+        , leader_id(leader_id)
     {}
 
-    ClientResponse::ClientResponse(const json& json_obj) :
-        ClientResponse(json_obj["result"], json_obj["success"], json_obj["leader_id"])
+    ClientResponse::ClientResponse(const json& json_obj)
+        : ClientResponse(json_obj["result"], json_obj["success"],
+                         json_obj["leader_id"])
     {}
 
     ClientResponse ClientResponse::not_a_leader_response(unsigned int leader_id)
@@ -28,10 +34,10 @@ namespace client
         return serialization;
     }
 
-    void ClientResponse::apply([[maybe_unused]] Server &server)
+    void ClientResponse::apply(Process& process)
     {
-        // this function should never be called because it's only for the client
-        return;
+        auto& client = dynamic_cast<Client&>(process);
+        client.on_client_response(*this);
     }
 
     bool ClientResponse::is_success() const
@@ -43,4 +49,4 @@ namespace client
     {
         return leader_id;
     }
-}
+} // namespace client

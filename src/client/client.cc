@@ -4,7 +4,6 @@
 #include <sstream>
 #include <unistd.h>
 
-#include "client-response.hh"
 #include "mpi.h"
 #include "repl/repl-message.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
@@ -76,7 +75,7 @@ void Client::run()
         if (query_str_opt.has_value())
         {
             auto query = message::Message::deserialize(query_str_opt.value());
-            handle_message(query);
+            query->apply(*this);
         }
     }
     std::cout << "Client " << client_index << " finished it's journey\n";
@@ -90,33 +89,18 @@ void Client::on_repl_start()
     started = true;
 }
 
-void Client::handle_message(message::shared_msg query)
+void Client::on_client_response(client::ClientResponse& client_rsp)
 {
-    if (query->get_msg_type() == REPL_MESSAGE)
+    if (client_rsp.is_success())
     {
-        auto repl_msg = std::dynamic_pointer_cast<repl::ReplMsg>(query);
-        if (repl_msg->get_repl_msg_type() == repl::START)
-            on_repl_start();
+        last_recv_request++;
+        std::cout << "Recv response : " << last_recv_request << "\n";
     }
-    else if (query->get_msg_type() == CLIENT_MESSAGE)
+    else
     {
-        auto client_msg = std::dynamic_pointer_cast<client::ClientMsg>(query);
-        if (client_msg->get_client_msg_type() == client::CLIENT_RESPONSE)
-        {
-            auto client_rsp =
-                std::dynamic_pointer_cast<client::ClientResponse>(client_msg);
-            if (client_rsp->is_success())
-            {
-                last_recv_request++;
-                std::cout << "Recv response : " << last_recv_request << "\n";
-            }
-            else
-            {
-                // Maybe use the same serial_number
-                // -1 here because we increment last_send_request on first send
-                auto request = commands[last_send_request - 1];
-                send_request(request, client_rsp->get_leader_id());
-            }
-        }
+        // Maybe use the same serial_number
+        // -1 here because we increment last_send_request on first send
+        auto request = commands[last_send_request - 1];
+        send_request(request, client_rsp.get_leader_id());
     }
 }

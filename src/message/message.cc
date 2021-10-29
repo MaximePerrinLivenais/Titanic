@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#include "repl/repl-message.hh"
 #include "client/client.hh"
+#include "repl/repl-message.hh"
 #include "rpc/rpc.hh"
 
 namespace message
@@ -23,7 +23,7 @@ namespace message
 
         serialization["msg_type"] = msg_type;
 
-        return serialization.dump(4);
+        return serialization.dump();
     }
 
     shared_msg Message::deserialize(const std::string& message)

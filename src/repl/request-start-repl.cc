@@ -1,5 +1,6 @@
 #include "request-start-repl.hh"
 
+#include "client/client.hh"
 #include "raft/server.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
@@ -32,9 +33,9 @@ namespace repl
         return serialization;
     }
 
-    void RequestStartREPL::apply([[maybe_unused]] Process& process)
+    void RequestStartREPL::apply(Process& process)
     {
-        // FIXME apply start message on process
-        return;
+        auto& client = dynamic_cast<Client&>(process);
+        client.on_repl_start();
     }
 } // namespace repl

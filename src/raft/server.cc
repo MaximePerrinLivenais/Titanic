@@ -389,23 +389,6 @@ void Server::set_current_term(const int current_term)
     reset_election_timeout();
 }
 
-/*void Server::apply_query(message::shared_msg query)
-{
-    // Rules for Servers - All Servers:
-    //      If RPC request or response contains term T > currentTerm:
-    //      set currentTerm = T, convert to follower (§5.1)
-    if (get_status() == CRASHED)
-        return;
-
-    if (query->get_term() > current_term)
-    {
-        set_current_term(query->get_term());
-        convert_to_follower();
-    }
-
-    query->apply(*this);
-}*/
-
 void Server::update_commit_index()
 {
     bool updated = true;
@@ -434,7 +417,7 @@ void Server::update_commit_index()
 void Server::convert_to_candidate()
 {
     // XXX: Debugging information
-    std::cout << "[ELECTION] " << server_rank << " is Starting an election"
+    std::cout << "[ELECTION] " << server_rank << " starts an election"
               << std::endl;
 
     // Rules for Servers - Candidates (§5.2):
