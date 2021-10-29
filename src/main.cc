@@ -10,25 +10,24 @@
 int main(int argc, char* argv[])
 {
     int nb_servers = std::stoi(argv[1]);
-    int rank;
 
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int rank = mpi::MPI_Get_group_comm_rank(MPI_COMM_WORLD);
 
     if (rank == 0)
     {
-        repl::REPL repl;
+        auto repl = repl::REPL();
         repl.run();
     }
     else if (rank >= 1 && rank <= nb_servers)
     {
         std::cout << "Hi, I am rank: " << rank << std::endl;
-        Server server(rank, nb_servers);
+        auto server = Server(rank, nb_servers);
         server.run();
     }
     else
     {
-        Client client(nb_servers, rank);
+        auto client = client::Client(nb_servers, rank);
         std::cout << rank << " : I am a client\n";
         client.run();
     }

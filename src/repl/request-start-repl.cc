@@ -35,7 +35,7 @@ namespace repl
 
     void RequestStartREPL::apply(Process& process)
     {
-        auto& client = dynamic_cast<Client&>(process);
+        auto& client = dynamic_cast<client::Client&>(process);
         client.on_repl_start();
     }
 } // namespace repl
