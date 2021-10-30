@@ -5,7 +5,7 @@
 
 namespace mpi
 {
-    int MPI_Timeoutrecv(void *buf, int count, MPI_Datatype datatype, int source,
+    int MPI_Timeoutrecv(void* buf, int count, MPI_Datatype datatype, int source,
                         int tag, MPI_Comm comm, int timeout)
     {
         MPI_Request request;
@@ -46,15 +46,17 @@ namespace mpi
         return std::make_optional<std::string>(buffer.data(), count);
     }
 
-    int MPI_Serialize_and_send(const rpc::shared_rpc rpc, const int dest,
-                                const int tag, const MPI_Comm comm)
+    int MPI_Serialize_and_send(const message::shared_msg message,
+                               const int dest, const int tag,
+                               const MPI_Comm comm)
     {
-        auto message = rpc->serialize();
+        auto serialization = message->serialize();
 
-        return MPI_Send(message.data(), message.length(), MPI_CHAR, dest, tag, comm);
+        return MPI_Send(serialization.data(), serialization.length(), MPI_CHAR,
+                        dest, tag, comm);
     }
 
-    void MPI_Broadcast(const std::string &message, const int tag,
+    void MPI_Broadcast(const std::string& message, const int tag,
                        const MPI_Comm comm, int rank, int nb_servers)
     {
         for (int i = 1; i < nb_servers; i++)
@@ -83,4 +85,3 @@ namespace mpi
         return rank;
     }
 } // namespace mpi
-
