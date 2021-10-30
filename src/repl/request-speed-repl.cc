@@ -5,15 +5,14 @@
 
 namespace repl
 {
-    RequestSpeedREPL::RequestSpeedREPL(unsigned int target_process,
-                                       ServerSpeed speed)
+    RequestSpeedREPL::RequestSpeedREPL(ServerSpeed speed)
         : ReplMsg(REPL_MSG_TYPE::SPEED)
-        , target_process(target_process)
         , speed(speed)
     {}
 
     RequestSpeedREPL::RequestSpeedREPL(const json& json_obj)
-        : RequestSpeedREPL(json_obj["target_process"], json_obj["speed"])
+        : ReplMsg(json_obj["repl_msg_type"])
+        , speed(json_obj["speed"])
     {}
 
     void RequestSpeedREPL::apply(process::Process& process)
@@ -25,7 +24,6 @@ namespace repl
     json RequestSpeedREPL::serialize_json() const
     {
         json serialization = ReplMsg::serialize_json();
-        serialization["target_process"] = target_process;
         serialization["speed"] = speed;
 
         return serialization;
@@ -36,13 +34,4 @@ namespace repl
         return speed;
     }
 
-    void RequestSpeedREPL::send()
-    {
-        // TODO: move this function to ReplMsg as it is the same for the 3
-        // children class
-        const std::string msg_serialized = serialize();
-
-        MPI_Send(msg_serialized.c_str(), msg_serialized.length(), MPI_CHAR,
-                 target_process, 0, MPI_COMM_WORLD);
-    }
 } // namespace repl

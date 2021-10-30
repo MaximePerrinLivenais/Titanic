@@ -7,16 +7,12 @@ namespace repl
     class RequestCrashREPL : public ReplMsg
     {
     public:
-        explicit RequestCrashREPL(unsigned int target_process);
+        explicit RequestCrashREPL();
         explicit RequestCrashREPL(const json& json_obj);
 
         void apply(process::Process& process) final;
 
-        void send();
-
     private:
         json serialize_json() const;
-
-        unsigned int target_process;
     };
 } // namespace repl

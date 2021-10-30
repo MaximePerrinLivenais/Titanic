@@ -28,8 +28,6 @@ namespace repl
 
         static shared_repl_msg deserialize(const std::string& message);
 
-        virtual void send() = 0;
-
     protected:
         virtual json serialize_json() const = 0;
 
