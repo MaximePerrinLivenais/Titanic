@@ -26,4 +26,6 @@ namespace client
         const unsigned int client_index;
     };
 
+    using shared_client_request = std::shared_ptr<ClientRequest>;
+
 } // namespace client

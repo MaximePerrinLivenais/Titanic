@@ -27,14 +27,18 @@ namespace client
                 std::cout << "Send request " << last_send_request << "\n";
                 auto request = commands[last_send_request];
                 int server_index = 1; // TODO: choose randomly
-                send_request(request, server_index);
+
+                mpi::MPI_Serialize_and_send(request, server_index, 0,
+                                            MPI_COMM_WORLD);
+
                 last_send_request++;
             }
 
             auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
             if (query_str_opt.has_value())
             {
-                auto query = message::Message::deserialize(query_str_opt.value());
+                auto query =
+                    message::Message::deserialize(query_str_opt.value());
                 query->apply(*this);
             }
         }
@@ -49,7 +53,7 @@ namespace client
         started = true;
     }
 
-    void Client::on_client_response(const client::ClientResponse& client_rsp)
+    void Client::on_client_response(const ClientResponse& client_rsp)
     {
         if (client_rsp.is_success())
         {
@@ -61,22 +65,16 @@ namespace client
             // Maybe use the same serial_number
             // -1 here because we increment last_send_request on first send
             auto request = commands[last_send_request - 1];
-            send_request(request, client_rsp.get_leader_id());
+            mpi::MPI_Serialize_and_send(request, client_rsp.get_leader_id(), 0,
+                                        MPI_COMM_WORLD);
         }
     }
 
-    client::ClientRequest Client::create_request(const std::string& command)
+    shared_client_request Client::create_request(const std::string& command)
     {
         serial_number++;
-        return ClientRequest(command, serial_number, client_index);
-    }
-
-    void Client::send_request(const client::ClientRequest& request,
-                              unsigned int server_index) const
-    {
-        std::string message = request.serialize();
-        MPI_Send(message.data(), message.size(), MPI_CHAR, server_index, 0,
-                 MPI_COMM_WORLD);
+        return std::make_shared<ClientRequest>(command, serial_number,
+                                               client_index);
     }
 
     void Client::load_clients_command()
@@ -104,4 +102,4 @@ namespace client
         while (std::getline(stream, line))
             commands.push_back(create_request(line));
     }
-}
+} // namespace client
