@@ -13,7 +13,8 @@ namespace raft
     constexpr unsigned int MIN_TIMEOUT_MILLI = 1500;
     constexpr unsigned int MAX_TIMEOUT_MILLI = 3000;
 
-    Server::Server(int server_rank, int nb_servers)
+    Server::Server(const unsigned int server_rank,
+                   const unsigned int nb_servers)
         : Process(server_rank)
         , nb_servers(nb_servers)
         , current_status(ServerStatus::FOLLOWER)
@@ -77,7 +78,7 @@ namespace raft
     void Server::save_log() const
     {
         std::string filename =
-            "server_logs/server_n" + std::to_string(server_rank) + ".log";
+            "server_logs/server_n" + std::to_string(rank) + ".log";
 
         MPI_File file;
         // TODO: Check if it is open
@@ -367,7 +368,7 @@ namespace raft
         // Rules for Servers - Leaders:
         //      If last log index ≥ nextIndex for a follower: send AppendEntries
         //      RPC with log entries starting at nextIndex
-        for (int idx = 1; idx <= nb_servers; idx++)
+        for (unsigned int idx = 1; idx <= nb_servers; idx++)
         {
             if (idx == rank)
                 continue;
@@ -412,8 +413,8 @@ namespace raft
         {
             int n = commit_index + 1;
 
-            int count = 0;
-            for (int i = 1; i <= nb_servers; i++)
+            unsigned int count = 0;
+            for (unsigned int i = 1; i <= nb_servers; i++)
             {
                 if (match_index[i] >= n)
                     count++;
@@ -461,9 +462,7 @@ namespace raft
 
     bool Server::check_majority()
     {
-        // XXX: avoir unsigned and signed comparaison
-        int vote = vote_count;
-        return vote * 2 > nb_servers;
+        return vote_count * 2 > nb_servers;
     }
 
     bool Server::candidate_log_is_up_to_date(int last_log_index,
@@ -492,7 +491,7 @@ namespace raft
         std::cout << "[HEARTBEAT] from leader " << rank
                   << "------------------------------" << std::endl;
 
-        for (int follower_rank = 1; follower_rank <= nb_servers;
+        for (unsigned int follower_rank = 1; follower_rank <= nb_servers;
              follower_rank++)
         {
             if (follower_rank == rank)

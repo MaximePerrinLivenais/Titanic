@@ -2,7 +2,7 @@
 
 namespace process
 {
-    Process::Process(int rank)
+    Process::Process(const unsigned int rank)
         : rank(rank)
     {}
 } // namespace process

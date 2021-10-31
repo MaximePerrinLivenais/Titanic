@@ -13,6 +13,10 @@
 
 namespace repl
 {
+    REPL::REPL()
+        : Process(0)
+    {}
+
     static std::optional<shared_repl_msg> process_request(std::string& command)
     {
         if (command == "CRASH")
@@ -60,10 +64,6 @@ namespace repl
                                         MPI_COMM_WORLD);
         }
     }
-
-    REPL::REPL()
-        : Process(0)
-    {}
 
     void REPL::run()
     {

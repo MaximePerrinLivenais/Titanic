@@ -8,8 +8,8 @@
 
 namespace client
 {
-    Client::Client(const int server_last_index, unsigned int client_index)
-        : Process(client_index)
+    Client::Client(const int server_last_index, unsigned int client_rank)
+        : Process(client_rank)
         , serial_number(0)
         , server_last_index(server_last_index)
     {

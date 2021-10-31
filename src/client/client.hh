@@ -13,7 +13,7 @@ namespace client
     class Client : public process::Process
     {
     public:
-        Client(const int server_last_index, unsigned int client_index);
+        Client(const int server_last_index, unsigned int client_rank);
 
         void run();
 
@@ -34,7 +34,6 @@ namespace client
         // TODO: pass to false + use REPL START
         bool started = false;
 
-        // Use with std::vector<std::string> commands;
         unsigned last_send_request = 0;
         unsigned last_recv_request = 0;
 

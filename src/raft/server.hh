@@ -17,7 +17,7 @@ namespace raft
     class Server : public process::Process
     {
     public:
-        Server(int nb_servers, int server_rank);
+        Server(const unsigned int server_rank, const unsigned int nb_servers);
 
         // XXX: For testing purpose
         void set_status(const ServerStatus& server_status);
@@ -81,7 +81,7 @@ namespace raft
         /* ----------- Attributes ----------- */
 
         // Number of servers, servers rank go from 1 to nb_servers
-        int nb_servers;
+        unsigned int nb_servers;
 
         static const unsigned int heartbeat_time = 300;
 

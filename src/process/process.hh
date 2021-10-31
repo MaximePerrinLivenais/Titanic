@@ -5,11 +5,11 @@ namespace process
     class Process
     {
     public:
-        Process(int rank);
+        Process(const unsigned int rank);
 
         virtual ~Process() = default;
 
     protected:
-        int rank;
+        const unsigned int rank;
     };
 } // namespace process
