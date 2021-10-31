@@ -172,7 +172,9 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
         log_it++;
         entries_it++;
     }
-    log.erase(log_it, log.end());
+
+    if (rpc.get_entries().size())
+        log.erase(log_it, log.end());
 
     // 4.  Append any new entries not already in the log
     if (rpc.get_entries().size())
@@ -186,7 +188,6 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
                 log.emplace_back(entry);
             }
         }
-        //log.insert(log.end(), rpc.get_entries().begin(), rpc.get_entries().end());
     }
 
     // 5. If leaderCommit > commitIndex,
