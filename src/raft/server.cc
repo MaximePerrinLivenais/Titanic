@@ -191,6 +191,13 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
         entries_it++;
     }*/
 
+    /*std::cout << "Follower - " << server_rank << " prev_log_index " << rpc.get_prev_log_index() << std::endl;
+    std::cout << "==========ENTRY============" << std::endl;
+    for (const auto& entry : rpc.get_entries())
+        std::cout << entry.get_term() << " " << entry.get_command() << std::endl;
+    std::cout << "==========================\n";*/
+
+
     while (log_it != log.end() && entries_it != rpc.get_entries().end()
             && log_it->get_term() == entries_it->get_term())
     {
@@ -199,9 +206,17 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
     }
 
     if (log_it == log.end() + 1)
-        std::cout << "ALLLLERTTTT " << server_rank << " will crash" << std::endl << std::flush;
+    {
+        std::cout << "ALLLLERTTTT CRASHHHHHHHHHHHHHHHHHHHHHhh" << std::endl;
+        std::cout << "==========LOG============" << std::endl;
+        for (const auto& entry : log)
+            std::cout << entry.get_term() << " " << entry.get_command() << std::endl;
+        std::cout << "==========================\n\n\n" << std::flush;
+    }
 
-    log.erase(log_it, log.end());
+    if (rpc.get_entries().size())
+        log.erase(log_it, log.end());
+
     /*if (log_it != log.end())
     {
         std::cout << "WARNINNNNNG LOG ERASE" << std::endl;
@@ -252,7 +267,11 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
                                                                     true,
                                                                     server_rank,
                                                                     last_entry_index);
-    //std::cout << "5 - Follower " << server_rank << " send last log = " << get_last_log_index() << " to leader " << rpc.get_leader_id() << " size = " << log.size() << "\n";
+    /*std::cout << "Send last log = " << last_entry_index << " to leader " << rpc.get_leader_id() << " size = " << log.size() << "\n";
+    std::cout << "==========LOG============" << std::endl;
+        for (const auto& entry : log)
+            std::cout << entry.get_term() << " " << entry.get_command() << std::endl;
+    std::cout << "==========================\n\n\n" << std::flush;*/
     mpi::MPI_Serialize_and_send(response, rpc.get_leader_id(), 0, MPI_COMM_WORLD);
 }
 
