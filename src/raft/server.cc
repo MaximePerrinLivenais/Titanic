@@ -184,6 +184,7 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
             // XXX: we might do something smarter using Log Matching property
             if (std::find(log.begin(), log.end(), entry) == log.end())
             {
+                std::cout << "Server n" << server_rank << " add to its log\n" << std::flush;
                 log.emplace_back(entry);
             }
         }
