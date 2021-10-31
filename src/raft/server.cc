@@ -10,8 +10,8 @@
 
 namespace raft
 {
-    constexpr unsigned int MIN_TIMEOUT_MILLI = 1500;
-    constexpr unsigned int MAX_TIMEOUT_MILLI = 3000;
+    constexpr unsigned int MIN_TIMEOUT_MILLI = 150;
+    constexpr unsigned int MAX_TIMEOUT_MILLI = 300;
 
     Server::Server(const unsigned int server_rank,
                    const unsigned int nb_servers)
@@ -61,7 +61,7 @@ namespace raft
                 query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
             }
 
-            if (!is_alive())
+            if (!alive)
                 continue;
 
             save_log();
@@ -457,7 +457,7 @@ namespace raft
         srand(time(0) + rank);
 
         auto range = MAX_TIMEOUT_MILLI - MIN_TIMEOUT_MILLI;
-        election_timeout = std::rand() % (range) + MIN_TIMEOUT_MILLI;
+        election_timeout = std::rand() % range + MIN_TIMEOUT_MILLI;
     }
 
     bool Server::check_majority()
