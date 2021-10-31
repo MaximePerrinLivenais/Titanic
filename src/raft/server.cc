@@ -141,7 +141,6 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
                                                                         false,
                                                                         server_rank,
                                                                         get_last_log_index());
-    //std::cout << "5 - Follower " << server_rank << " send last log = " << get_last_log_index() << " to leader " << rpc.get_leader_id() << " size = " << log.size() << "\n";
         mpi::MPI_Serialize_and_send(response, rpc.get_leader_id(), 0, MPI_COMM_WORLD);
         return;
     }
@@ -158,7 +157,6 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
                                                                         false,
                                                                         server_rank,
                                                                         get_last_log_index());
-    //std::cout << "5 - Follower " << server_rank << " send last log = " << get_last_log_index() << " to leader " << rpc.get_leader_id() << " size = " << log.size() << "\n";
         mpi::MPI_Serialize_and_send(response, rpc.get_leader_id(), 0, MPI_COMM_WORLD);
         return;
     }
@@ -168,36 +166,6 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
     auto log_it = log.begin() + rpc.get_prev_log_index() + 1;
     auto entries_it = rpc.get_entries().begin();
 
-
-    /*std::vector<rpc::LogEntry> entries;
-    entries.emplace_back(1, "0", 1, 4);
-    entries.emplace_back(1, "0", 1, 5);
-    entries.emplace_back(1, "0", 1, 3);
-
-    auto entries_it = entries.begin();
-
-    std::vector<rpc::LogEntry> fake_log;
-    fake_log.emplace_back(1, "0", 1, 4);
-    fake_log.emplace_back(1, "0", 1, 5);
-    fake_log.emplace_back(2, "0", 1, 3);
-
-
-    auto log_it = fake_log.begin();// + rpc.get_prev_log_index() + 1;
-
-    while (log_it != log.end() && entries_it != entries.end()
-            && log_it->get_term() == entries_it->get_term())
-    {
-        log_it++;
-        entries_it++;
-    }*/
-
-    /*std::cout << "Follower - " << server_rank << " prev_log_index " << rpc.get_prev_log_index() << std::endl;
-    std::cout << "==========ENTRY============" << std::endl;
-    for (const auto& entry : rpc.get_entries())
-        std::cout << entry.get_term() << " " << entry.get_command() << std::endl;
-    std::cout << "==========================\n";*/
-
-
     while (log_it != log.end() && entries_it != rpc.get_entries().end()
             && log_it->get_term() == entries_it->get_term())
     {
@@ -205,41 +173,8 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
         entries_it++;
     }
 
-    if (log_it == log.end() + 1)
-    {
-        std::cout << "ALLLLERTTTT CRASHHHHHHHHHHHHHHHHHHHHHhh" << std::endl;
-        std::cout << "==========LOG============" << std::endl;
-        for (const auto& entry : log)
-            std::cout << entry.get_term() << " " << entry.get_command() << std::endl;
-        std::cout << "==========================\n\n\n" << std::flush;
-    }
-
     if (rpc.get_entries().size())
         log.erase(log_it, log.end());
-
-    /*if (log_it != log.end())
-    {
-        std::cout << "WARNINNNNNG LOG ERASE" << std::endl;
-        for (const auto& entry : rpc.get_entries())
-            std::cout << entry.get_term() << "\n";
-        std::cout << "\n";
-
-    }*/
-    /*if (entries_it != rpc.get_entries().end())
-    {
-        std::cout << "OH MAMA dans le serveur " << server_rank << std::endl;
-
-        std::cout << "==========Prev log index===========" << std::endl;
-        std::cout << "Last log index = " << rpc.get_prev_log_index() << std::endl;
-        std::cout << "==========LOG============" << std::endl;
-        for (const auto& entry : log)
-            std::cout << entry.get_term() << " " << entry.get_command() << std::endl;
-        std::cout << "==========ENTRY============" << std::endl;
-        for (const auto& entry : rpc.get_entries())
-            std::cout << entry.get_term() << " " << entry.get_command() << std::endl;
-        std::cout << "==========================\n\n\n" << std::flush;
-        log.erase(log_it, log.end());
-    }*/
 
     // 4.  Append any new entries not already in the log
     if (rpc.get_entries().size())
@@ -249,11 +184,9 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
             // XXX: we might do something smarter using Log Matching property
             if (std::find(log.begin(), log.end(), entry) == log.end())
             {
-                //std::cout << "Server n" << server_rank << " add to its log\n" << std::flush;
                 log.emplace_back(entry);
             }
         }
-        //log.insert(log.end(), rpc.get_entries().begin(), rpc.get_entries().end());
     }
 
     // 5. If leaderCommit > commitIndex,
@@ -267,11 +200,6 @@ void Server::on_append_entries_rpc(const rpc::AppendEntriesRPC& rpc)
                                                                     true,
                                                                     server_rank,
                                                                     last_entry_index);
-    /*std::cout << "Send last log = " << last_entry_index << " to leader " << rpc.get_leader_id() << " size = " << log.size() << "\n";
-    std::cout << "==========LOG============" << std::endl;
-        for (const auto& entry : log)
-            std::cout << entry.get_term() << " " << entry.get_command() << std::endl;
-    std::cout << "==========================\n\n\n" << std::flush;*/
     mpi::MPI_Serialize_and_send(response, rpc.get_leader_id(), 0, MPI_COMM_WORLD);
 }
 
