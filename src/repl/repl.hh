@@ -1,14 +1,14 @@
 #pragma once
 
+#include "process/process.hh"
+
 namespace repl
 {
-    class REPL
+    class REPL : public process::Process
     {
     public:
-        REPL() = default;
+        REPL();
 
         void run();
-
-    private:
     };
 } // namespace repl

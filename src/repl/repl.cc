@@ -61,6 +61,10 @@ namespace repl
         }
     }
 
+    REPL::REPL()
+        : Process(0)
+    {}
+
     void REPL::run()
     {
         // Start repl

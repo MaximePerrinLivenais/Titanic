@@ -9,8 +9,8 @@
 namespace client
 {
     Client::Client(const int server_last_index, unsigned int client_index)
-        : serial_number(0)
-        , client_index(client_index)
+        : Process(client_index)
+        , serial_number(0)
         , server_last_index(server_last_index)
     {
         load_clients_command();
@@ -42,7 +42,7 @@ namespace client
                 query->apply(*this);
             }
         }
-        std::cout << "Client " << client_index << " finished it's journey\n";
+        std::cout << "Client " << rank << " finished it's journey\n";
 
         while (1)
         {}
@@ -73,14 +73,13 @@ namespace client
     shared_client_request Client::create_request(const std::string& command)
     {
         serial_number++;
-        return std::make_shared<ClientRequest>(command, serial_number,
-                                               client_index);
+        return std::make_shared<ClientRequest>(command, serial_number, rank);
     }
 
     void Client::load_clients_command()
     {
         std::string filename =
-            "client_commands/commands_" + std::to_string(client_index) + ".txt";
+            "client_commands/commands_" + std::to_string(rank) + ".txt";
 
         MPI_File file;
         MPI_Status status;

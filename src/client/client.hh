@@ -29,7 +29,6 @@ namespace client
         // XXX: map between serial_number and ClientRequest to tracks sent
         // request and remove them when answered
         unsigned int serial_number;
-        const unsigned int client_index;
         const int server_last_index;
 
         // TODO: pass to false + use REPL START

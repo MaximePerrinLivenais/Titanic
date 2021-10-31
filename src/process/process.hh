@@ -5,8 +5,11 @@ namespace process
     class Process
     {
     public:
-        Process() = default;
+        Process(int rank);
 
         virtual ~Process() = default;
+
+    protected:
+        int rank;
     };
 } // namespace process

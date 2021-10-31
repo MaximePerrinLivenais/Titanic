@@ -14,7 +14,7 @@ namespace raft
     constexpr unsigned int MAX_TIMEOUT_MILLI = 3000;
 
     Server::Server(int server_rank, int nb_servers)
-        : server_rank(server_rank)
+        : Process(server_rank)
         , nb_servers(nb_servers)
         , current_status(ServerStatus::FOLLOWER)
         , vote_count(0)
@@ -127,7 +127,7 @@ namespace raft
         if (rpc.get_term() < current_term)
         {
             auto response = std::make_shared<rpc::AppendEntriesResponse>(
-                current_term, false, server_rank, get_last_log_index());
+                current_term, false, rank, get_last_log_index());
             mpi::MPI_Serialize_and_send(response, rpc.get_leader_id(), 0,
                                         MPI_COMM_WORLD);
             return;
@@ -142,7 +142,7 @@ namespace raft
             != rpc.get_prev_log_term())
         {
             auto response = std::make_shared<rpc::AppendEntriesResponse>(
-                current_term, false, server_rank, get_last_log_index());
+                current_term, false, rank, get_last_log_index());
             mpi::MPI_Serialize_and_send(response, rpc.get_leader_id(), 0,
                                         MPI_COMM_WORLD);
             return;
@@ -171,9 +171,9 @@ namespace raft
                 // property
                 if (std::find(log.begin(), log.end(), entry) == log.end())
                 {
-                    std::cout << "Server n" << server_rank
-                              << " add to its log\n"
+                    std::cout << "Server n" << rank << " add to its log\n"
                               << std::flush;
+
                     log.emplace_back(entry);
                 }
             }
@@ -189,7 +189,7 @@ namespace raft
                 std::min(rpc.get_leader_commit_index(), last_entry_index);
 
         auto response = std::make_shared<rpc::AppendEntriesResponse>(
-            current_term, true, server_rank, last_entry_index);
+            current_term, true, rank, last_entry_index);
         mpi::MPI_Serialize_and_send(response, rpc.get_leader_id(), 0,
                                     MPI_COMM_WORLD);
     }
@@ -308,7 +308,7 @@ namespace raft
         else
             latency = 0;
 
-        std::cout << "Speed set to " << latency << " for server " << server_rank
+        std::cout << "Speed set to " << latency << " for server " << rank
                   << "\n";
     }
 
@@ -369,7 +369,7 @@ namespace raft
         //      RPC with log entries starting at nextIndex
         for (int idx = 1; idx <= nb_servers; idx++)
         {
-            if (idx == server_rank)
+            if (idx == rank)
                 continue;
 
             int last_log_index = get_last_log_index();
@@ -382,8 +382,8 @@ namespace raft
                     log.begin() + next_index[idx], log.end());
 
                 auto rpc = std::make_shared<rpc::AppendEntriesRPC>(
-                    current_term, server_rank, prev_log_index, prev_log_term,
-                    entries, commit_index);
+                    current_term, rank, prev_log_index, prev_log_term, entries,
+                    commit_index);
                 mpi::MPI_Serialize_and_send(rpc, idx, 0, MPI_COMM_WORLD);
             }
         }
@@ -432,7 +432,7 @@ namespace raft
 
     void Server::convert_to_candidate()
     {
-        std::cout << "[ELECTION] " << server_rank << " starts an election"
+        std::cout << "[ELECTION] " << rank << " starts an election"
                   << std::endl;
 
         // Rules for Servers - Candidates (§5.2):
@@ -445,7 +445,7 @@ namespace raft
 
         set_current_term(current_term + 1);
 
-        voted_for = server_rank;
+        voted_for = rank;
         vote_count = 1;
 
         broadcast_request_vote();
@@ -453,7 +453,7 @@ namespace raft
 
     void Server::reset_election_timeout()
     {
-        srand(time(0) + server_rank);
+        srand(time(0) + rank);
 
         auto range = MAX_TIMEOUT_MILLI - MIN_TIMEOUT_MILLI;
         election_timeout = std::rand() % (range) + MIN_TIMEOUT_MILLI;
@@ -480,23 +480,22 @@ namespace raft
 
     void Server::broadcast_request_vote()
     {
-        auto request_vote =
-            rpc::RequestVoteRPC(current_term, server_rank, get_last_log_index(),
-                                get_last_log_term());
+        auto request_vote = rpc::RequestVoteRPC(
+            current_term, rank, get_last_log_index(), get_last_log_term());
 
-        mpi::MPI_Broadcast(request_vote.serialize(), 0, MPI_COMM_WORLD,
-                           server_rank, nb_servers);
+        mpi::MPI_Broadcast(request_vote.serialize(), 0, MPI_COMM_WORLD, rank,
+                           nb_servers);
     }
 
     void Server::leader_heartbeat()
     {
-        std::cout << "[HEARTBEAT] from leader " << server_rank
+        std::cout << "[HEARTBEAT] from leader " << rank
                   << "------------------------------" << std::endl;
 
         for (int follower_rank = 1; follower_rank <= nb_servers;
              follower_rank++)
         {
-            if (follower_rank == server_rank)
+            if (follower_rank == rank)
                 continue;
 
             int prev_log_index = get_prev_log_index(follower_rank);
@@ -504,8 +503,9 @@ namespace raft
             auto entries = std::vector<rpc::LogEntry>();
 
             auto rpc = std::make_shared<rpc::AppendEntriesRPC>(
-                current_term, server_rank, prev_log_index, prev_log_term,
-                entries, commit_index);
+                current_term, rank, prev_log_index, prev_log_term, entries,
+                commit_index);
+
             mpi::MPI_Serialize_and_send(rpc, follower_rank, 0, MPI_COMM_WORLD);
         }
     }
@@ -535,8 +535,8 @@ namespace raft
         match_index = std::vector<int>(nb_servers + 1, -1);
 
         // XXX: Debugging information
-        std::cout << "[LEADER] term : " << current_term
-                  << ", rank : " << server_rank << std::endl;
+        std::cout << "[LEADER] term : " << current_term << ", rank : " << rank
+                  << std::endl;
 
         // Rules for Servers - Leaders:
         //      Upon election: send initial empty AppendEntries RPCs (heartbeat)

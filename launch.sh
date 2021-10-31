@@ -6,13 +6,13 @@ read -p 'Number of request per clients: ' nb_requests
 
 # Create folder where servers while save logs
 if [ -d "server_logs" ]; then
-    rm server_logs -rf
+    rm -rf server_logs
 fi
 mkdir "server_logs"
 
 # Create folder where clients will load commands
 if [ -d "client_commands" ]; then
-    rm client_commands -rf
+    rm -rf client_commands
 fi
 mkdir "client_commands"
 

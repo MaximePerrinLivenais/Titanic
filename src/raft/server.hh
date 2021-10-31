@@ -73,14 +73,12 @@ namespace raft
         int get_term_at_prev_log_index(int prev_log_index);
 
         // Repl modifiers
-        // XXX: maybe add crash to ServerStatus or use ElectionStatus + ServerStatus
+        // XXX: maybe add crash to ServerStatus or use ElectionStatus +
+        // ServerStatus
         bool alive = true;
         int latency = 0;
 
         /* ----------- Attributes ----------- */
-
-        // To avoid calling MPI_Comm_rank every time
-        int server_rank;
 
         // Number of servers, servers rank go from 1 to nb_servers
         int nb_servers;
@@ -107,4 +105,4 @@ namespace raft
         std::vector<int> next_index;
         std::vector<int> match_index;
     };
-}
+} // namespace raft

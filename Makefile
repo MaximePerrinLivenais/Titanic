@@ -16,6 +16,7 @@ MESSAGE = \
             $(NULL)
 
 RAFT = \
+		src/process/process.cc \
         src/raft/server.cc \
         $(NULL)
 
