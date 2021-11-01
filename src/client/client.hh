@@ -17,10 +17,11 @@ class Client
         void process_message(message::shared_msg query);
         void process_repl_message(message::shared_msg query);
         void process_client_message(message::shared_msg query);
+        void check_time_since_last_request();
 
         /* Send request */
         void send_request(const client::ClientRequest& request,
-            unsigned int server_index) const;
+            unsigned int server_index);
         void send_next_request();
         void send_again();
 
@@ -30,20 +31,17 @@ class Client
         const unsigned int client_index;
         const int server_last_index;
 
+        unsigned long time_since_last_request;
 
-        // TODO: pass to false + use REPL START
         bool started = false;
 
+        static const unsigned resend_timeout = 800;
 
         // Use with std::vector<std::string> commands;
         unsigned next_request = 0;
         unsigned next_response = 0;
 
         int last_known_leader;
-
-
-        bool recv_all_response = false;
-
 
         std::vector<client::ClientRequest> commands;
 };

@@ -3,6 +3,7 @@
 #include "utils/openmpi/mpi-wrapper.hh"
 #include "repl/repl-message.hh"
 #include "client-response.hh"
+#include "utils/chrono/chrono.hh"
 #include <sstream>
 
 #include <unistd.h>
@@ -33,9 +34,25 @@ void Client::run()
             auto query = message::Message::deserialize(query_str_opt.value());
             process_message(query);
         }
+
+        check_time_since_last_request();
     }
     std::cout << "Client " << client_index << " finished it's journey\n";
 
+}
+
+void Client::check_time_since_last_request()
+{
+    if (next_request != next_response + 1)
+        return;
+
+    if (chrono::get_time_milliseconds() - time_since_last_request >= resend_timeout)
+    {
+        time_since_last_request = chrono::get_time_milliseconds();
+
+        last_known_leader = (rand() % server_last_index) + 1;
+        send_again();
+    }
 }
 
 /* ---------------------- Request creation and load ------------------------- */
@@ -76,11 +93,14 @@ client::ClientRequest Client::create_request(const std::string& command)
 
 /* --------------------------- Send request --------------------------------- */
 void Client::send_request(const client::ClientRequest& request,
-        unsigned int server_index) const
+        unsigned int server_index)
 {
     std::cout << "Client n" << client_index << " send message to server n" << server_index << "\n";
     std::string message = request.serialize();
-    MPI_Send(message.data(), message.size(), MPI_CHAR, server_index, 0, MPI_COMM_WORLD);
+    MPI_Request req;
+    MPI_Isend(message.data(), message.size(), MPI_CHAR, server_index, 0, MPI_COMM_WORLD,
+            &req);
+    time_since_last_request = chrono::get_time_milliseconds();
 }
 
 void Client::send_next_request()
@@ -98,7 +118,6 @@ void Client::send_next_request()
 
 void Client::send_again()
 {
-    std::cout << "send again\n";
     auto request = commands[next_response];
     send_request(request, last_known_leader);
 }

@@ -52,6 +52,10 @@ void Server::run()
 
             auto query = message::Message::deserialize(query_str_opt.value());
 
+            /*if (query_str_opt.value().find("log_index") == std::string::npos)
+                std::cout << "Server " << server_rank << ":"
+                    << query_str_opt.value() << "\n";*/
+
             // TODO here we can deserialize direclty in message
             // auto query =
             // rpc::RemoteProcedureCall::deserialize(query_str_opt.value());
@@ -597,7 +601,6 @@ void Server::set_status(const ServerStatus& server_status)
 
 void Server::on_client_request(const client::ClientRequest& request)
 {
-    // XXX: maybe move it to ClientMessage::apply
     if (!is_alive())
         return;
 
