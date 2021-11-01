@@ -1,5 +1,7 @@
 #include "request-speed-repl.hh"
 
+#include <iostream>
+
 #include "raft/server.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
@@ -17,8 +19,15 @@ namespace repl
 
     void RequestSpeedREPL::apply(process::Process& process)
     {
-        auto& server = dynamic_cast<raft::Server&>(process);
-        server.on_repl_speed(*this);
+        try
+        {
+            auto& server = dynamic_cast<raft::Server&>(process);
+            server.on_repl_speed(*this);
+        }
+        catch (const std::bad_cast&)
+        {
+            std::cerr << "Speed message could not be applied\n";
+        }
     }
 
     json RequestSpeedREPL::serialize_json() const

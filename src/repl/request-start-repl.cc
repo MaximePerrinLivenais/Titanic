@@ -1,5 +1,7 @@
 #include "request-start-repl.hh"
 
+#include <iostream>
+
 #include "client/client.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
@@ -15,8 +17,15 @@ namespace repl
 
     void RequestStartREPL::apply(process::Process& process)
     {
-        auto& client = dynamic_cast<client::Client&>(process);
-        client.on_repl_start();
+        try
+        {
+            auto& client = dynamic_cast<client::Client&>(process);
+            client.on_repl_start();
+        }
+        catch (const std::bad_cast&)
+        {
+            std::cerr << "Start message could not be applied\n";
+        }
     }
 
     json RequestStartREPL::serialize_json() const

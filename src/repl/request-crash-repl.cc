@@ -1,5 +1,7 @@
 #include "request-crash-repl.hh"
 
+#include <iostream>
+
 #include "raft/server.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
@@ -15,8 +17,15 @@ namespace repl
 
     void RequestCrashREPL::apply(process::Process& process)
     {
-        auto& server = dynamic_cast<raft::Server&>(process);
-        server.on_repl_crash();
+        try
+        {
+            auto& server = dynamic_cast<raft::Server&>(process);
+            server.on_repl_crash();
+        }
+        catch (const std::bad_cast&)
+        {
+            std::cerr << "Crash message could not be applied\n";
+        }
     }
 
     json RequestCrashREPL::serialize_json() const
