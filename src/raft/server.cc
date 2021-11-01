@@ -597,6 +597,10 @@ void Server::set_status(const ServerStatus& server_status)
 
 void Server::on_client_request(const client::ClientRequest& request)
 {
+    // XXX: maybe move it to ClientMessage::apply
+    if (!is_alive())
+        return;
+
     // XXX: what if not leader are yet elected
     if (get_status() != ServerStatus::LEADER)
     {

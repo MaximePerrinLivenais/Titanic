@@ -29,5 +29,5 @@ done
 
 echo "localhost slots=$nb_process" > hostfile
 
-mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0 ./titanic $nb_servers $nb_clients # &> output.txt
-#mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0  xterm -e gdb --args ./titanic $nb_servers $nb_clients
+#mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0 ./titanic $nb_servers $nb_clients # &> output.txt
+mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0  xterm -e gdb --args ./titanic $nb_servers $nb_clients

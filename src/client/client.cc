@@ -85,14 +85,12 @@ void Client::send_request(const client::ClientRequest& request,
 
 void Client::send_next_request()
 {
-    std::cout << "send next\n";
     if (next_request > next_response + 1)
     {
         std::cout << "Waiting for previous request to get a response\n";
         return;
     }
 
-    std::cout << "afetr if\n";
     auto request = commands[next_request];
     send_request(request, last_known_leader);
     next_request++;
@@ -100,6 +98,7 @@ void Client::send_next_request()
 
 void Client::send_again()
 {
+    std::cout << "send again\n";
     auto request = commands[next_response];
     send_request(request, last_known_leader);
 }
@@ -118,7 +117,6 @@ void Client::process_repl_message(message::shared_msg message)
 {
     auto repl_msg = std::dynamic_pointer_cast<repl::ReplMsg>(message);
 
-    std::cout << "Repl blabla\n";
     if (repl_msg->get_repl_msg_type() == repl::START)
         started = true;
     else if (repl_msg->get_repl_msg_type() == repl::SEND)
