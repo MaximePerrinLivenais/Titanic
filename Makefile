@@ -12,8 +12,8 @@ CLIENT = \
          $(NULL)
 
 MESSAGE = \
-            src/message/message.cc \
-            $(NULL)
+         src/message/message.cc \
+         $(NULL)
 
 RAFT = \
 		src/process/process.cc \

@@ -13,7 +13,7 @@ namespace client
     class Client : public process::Process
     {
     public:
-        Client(const int server_last_index, unsigned int client_rank);
+        Client(const int server_last_index, const unsigned int client_rank);
 
         void run();
 

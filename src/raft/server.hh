@@ -81,7 +81,7 @@ namespace raft
         /* ----------- Attributes ----------- */
 
         // Number of servers, servers rank go from 1 to nb_servers
-        unsigned int nb_servers;
+        const unsigned int nb_servers;
 
         static const unsigned int heartbeat_time = 30;
 

@@ -14,7 +14,7 @@ namespace rpc
 
         explicit RequestVoteRPC(const json& json_obj);
 
-        void apply(raft::Server& server) override;
+        void apply(raft::Server& server) final;
 
         unsigned int get_candidate_id() const;
         int get_last_log_index() const;
