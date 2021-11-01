@@ -10,19 +10,24 @@
 
 namespace raft
 {
-    constexpr unsigned int MIN_TIMEOUT_MILLI = 150;
-    constexpr unsigned int MAX_TIMEOUT_MILLI = 300;
+    constexpr unsigned int MIN_TIMEOUT_MILLI = 1500;
+    constexpr unsigned int MAX_TIMEOUT_MILLI = 3000;
 
     Server::Server(const unsigned int server_rank,
                    const unsigned int nb_servers)
         : Process(server_rank)
         , nb_servers(nb_servers)
         , current_status(ServerStatus::FOLLOWER)
+        , election_timeout(0)
         , vote_count(0)
+        , begin(0)
         , current_term(0)
         , voted_for(0)
+        , log()
         , commit_index(-1)
         , last_applied(-1)
+        , next_index()
+        , match_index()
     {
         reset_election_timeout();
     }
@@ -71,7 +76,9 @@ namespace raft
                 apply_leader_rules();
             else if (current_status == ServerStatus::CANDIDATE
                      || current_status == ServerStatus::FOLLOWER)
+            {
                 apply_follower_and_candidate_rules();
+            }
         }
     }
 
@@ -83,8 +90,15 @@ namespace raft
         MPI_File file;
         // TODO: Check if it is open
 
-        MPI_File_open(MPI_COMM_SELF, filename.data(),
-                      MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL, &file);
+        auto rc = MPI_File_open(MPI_COMM_SELF, filename.data(),
+                                MPI_MODE_WRONLY | MPI_MODE_CREATE,
+                                MPI_INFO_NULL, &file);
+
+        if (rc)
+            std::cout << "ERROR WHILE OPENING : " << filename
+                      << "==================================\n"
+                      << std::flush;
+
         MPI_Status status;
 
         for (const auto& entry : log)
@@ -161,7 +175,9 @@ namespace raft
             log_it++;
             entries_it++;
         }
-        log.erase(log_it, log.end());
+
+        if (rpc.get_entries().size())
+            log.erase(log_it, log.end());
 
         // 4.  Append any new entries not already in the log
         if (rpc.get_entries().size())
@@ -433,8 +449,8 @@ namespace raft
 
     void Server::convert_to_candidate()
     {
-        std::cout << "[ELECTION] " << rank << " starts an election"
-                  << std::endl;
+        std::cout << "[ELECTION] " << rank << " starts an election" << std::endl
+                  << std::flush;
 
         // Rules for Servers - Candidates (§5.2):
         // On conversion to candidate, start election:

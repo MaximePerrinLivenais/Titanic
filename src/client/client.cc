@@ -4,11 +4,12 @@
 #include <sstream>
 #include <unistd.h>
 
+#include "client/client-request.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
 namespace client
 {
-    Client::Client(const int server_last_index, unsigned int client_rank)
+    Client::Client(const int server_last_index, const unsigned int client_rank)
         : Process(client_rank)
         , serial_number(0)
         , server_last_index(server_last_index)
@@ -85,8 +86,13 @@ namespace client
         MPI_Status status;
         // TODO: Check if it is open
 
-        MPI_File_open(MPI_COMM_SELF, filename.data(), MPI_MODE_RDONLY,
-                      MPI_INFO_NULL, &file);
+        auto rc = MPI_File_open(MPI_COMM_SELF, filename.data(), MPI_MODE_RDONLY,
+                                MPI_INFO_NULL, &file);
+
+        if (rc)
+            std::cout << "ERROR WHILE OPENING : " << filename
+                      << "==================================\n"
+                      << std::flush;
 
         MPI_Offset size;
         MPI_File_get_size(file, &size);
