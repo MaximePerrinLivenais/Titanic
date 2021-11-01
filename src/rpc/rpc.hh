@@ -4,9 +4,11 @@
 #include <string>
 
 #include "message/message.hh"
-#include "misc/json.hh"
 
-using namespace message;
+namespace raft
+{
+    class Server;
+}
 
 namespace rpc
 {
@@ -28,18 +30,17 @@ namespace rpc
         explicit RemoteProcedureCall(const unsigned int term,
                                      const RPC_TYPE rpc_type);
 
+        static shared_rpc deserialize(const std::string& message);
+
+        void apply(process::Process& process) final;
+
+        virtual void apply(raft::Server& server) = 0;
+
         unsigned int get_term() const;
         RPC_TYPE get_rpc_type() const;
 
-        static shared_rpc deserialize(const std::string& message);
-
-        void apply_message(Server& server) final;
-
-        // virtual ~RemoteProcedureCall() = default;
-
     protected:
         json serialize_json() const override;
-        virtual void apply(Server& server) = 0;
 
         const unsigned int term;
         const RPC_TYPE rpc_type;

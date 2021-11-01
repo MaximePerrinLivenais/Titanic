@@ -6,32 +6,28 @@
 #include <string>
 
 #include "request-crash-repl.hh"
-#include "request-start-repl.hh"
 #include "request-speed-repl.hh"
+#include "request-start-repl.hh"
+#include "server-speed.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
 namespace repl
 {
-    static std::optional<shared_repl_msg> build_message_from_input()
+    REPL::REPL()
+        : Process(0)
+    {}
+
+    static std::optional<shared_repl_msg> process_request(std::string& command)
     {
-        //std::cout << "Enter command:\n";
-
-        std::string command_name;
-        std::cin >> command_name;
-
-        if (command_name == "CRASH")
+        if (command == "CRASH")
+            return std::make_shared<RequestCrashREPL>();
+        else if (command == "SPEED")
         {
-            unsigned int process_target;
-            std::cin >> process_target;
-            return std::make_shared<RequestCrashREPL>(process_target);
-        }
-        else if (command_name == "SPEED")
-        {
-            unsigned int process_target;
+            // Handle speed message
             std::string speed_str;
-            std::cin >> process_target;
             std::cin >> speed_str;
             ServerSpeed speed;
+
             if (speed_str == "LOW")
                 speed = LOW;
             else if (speed_str == "MEDIUM")
@@ -44,20 +40,29 @@ namespace repl
                 return std::nullopt;
             }
 
-            return std::make_shared<RequestSpeedREPL>(process_target, speed);
+            return std::make_shared<RequestSpeedREPL>(speed);
         }
-        else if (command_name == "START")
-        {
-            unsigned int process_target;
-            std::cin >> process_target;
-            return std::make_shared<RequestStartREPL>(process_target);
-        }
-        else
-        {
-            //std::clog << command_name << ": Unknown command\n";
-        }
+        else if (command == "START")
+            return std::make_shared<RequestStartREPL>();
 
         return std::nullopt;
+    }
+
+    static void process_msg_from_input()
+    {
+        std::string command_name;
+        std::cin >> command_name;
+
+        std::optional<shared_repl_msg> repl_msg = process_request(command_name);
+
+        if (repl_msg.has_value())
+        {
+            unsigned target_process = 0;
+            std::cin >> target_process;
+
+            mpi::MPI_Serialize_and_send(repl_msg.value(), target_process, 0,
+                                        MPI_COMM_WORLD);
+        }
     }
 
     void REPL::run()
@@ -65,12 +70,7 @@ namespace repl
         // Start repl
         while (true)
         {
-            auto msg = build_message_from_input();
-
-            if (msg.has_value())
-            {
-                msg.value()->send();
-            }
+            process_msg_from_input();
         }
     }
 } // namespace repl

@@ -2,11 +2,11 @@
 
 #include <iostream>
 
-#include "append-entries-response.hh"
 #include "append-entries.hh"
-#include "raft/server.hh"
-#include "request-vote-response.hh"
+#include "append-entries-response.hh"
 #include "request-vote.hh"
+#include "request-vote-response.hh"
+#include "raft/server.hh"
 
 using namespace message;
 
@@ -19,14 +19,10 @@ namespace rpc
         , rpc_type(rpc_type)
     {}
 
-    void RemoteProcedureCall::apply_message(Server& server)
+    void RemoteProcedureCall::apply(process::Process& process)
     {
-        if (!server.is_alive())
-            return;
-
-        server.update_term(term);
-
-        this->apply(server);
+        auto& server = dynamic_cast<raft::Server&>(process);
+        server.on_rpc(*this);
     }
 
     json RemoteProcedureCall::serialize_json() const
@@ -38,16 +34,6 @@ namespace rpc
 
         return serialization;
     }
-
-    // const std::string RemoteProcedureCall::serialize() const
-    // {
-    //     json serialization = this->serialize_json();
-
-    //     serialization["term"] = term;
-    //     serialization["rpc_type"] = rpc_type;
-
-    //     return serialization.dump(4);
-    // }
 
     shared_rpc RemoteProcedureCall::deserialize(const std::string& message)
     {

@@ -1,39 +1,38 @@
 #include "request-start-repl.hh"
 
-#include "raft/server.hh"
+#include <iostream>
+
+#include "client/client.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
 namespace repl
 {
-    RequestStartREPL::RequestStartREPL(unsigned int target_process)
+    RequestStartREPL::RequestStartREPL()
         : ReplMsg(REPL_MSG_TYPE::START)
-        , target_process(target_process)
     {}
 
     RequestStartREPL::RequestStartREPL(const json& json_obj)
         : ReplMsg(json_obj["repl_msg_type"])
-        , target_process(json_obj["target_process"])
     {}
 
-    void RequestStartREPL::send()
+    void RequestStartREPL::apply(process::Process& process)
     {
-        // TODO: move to ReplMsg
-        const std::string msg_serialized = serialize();
-
-        MPI_Send(msg_serialized.c_str(), msg_serialized.length(), MPI_CHAR,
-                 target_process, 0, MPI_COMM_WORLD);
+        try
+        {
+            auto& client = dynamic_cast<client::Client&>(process);
+            client.on_repl_start();
+        }
+        catch (const std::bad_cast&)
+        {
+            std::cerr << "Start message could not be applied\n";
+        }
     }
 
     json RequestStartREPL::serialize_json() const
     {
         json serialization = ReplMsg::serialize_json();
-        serialization["target_process"] = target_process;
 
         return serialization;
     }
 
-    void RequestStartREPL::apply([[maybe_unused]] Server& server)
-    {
-        return;
-    }
 } // namespace repl

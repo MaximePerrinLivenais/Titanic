@@ -7,16 +7,12 @@ namespace repl
     class RequestStartREPL : public ReplMsg
     {
     public:
-        explicit RequestStartREPL(unsigned int target_process);
-
+        explicit RequestStartREPL();
         explicit RequestStartREPL(const json& json_obj);
 
-        void send();
+        void apply(process::Process& process) final;
 
     private:
         json serialize_json() const;
-        void apply(Server& server);
-
-        unsigned int target_process;
     };
 } // namespace repl

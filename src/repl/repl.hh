@@ -1,24 +1,14 @@
 #pragma once
 
+#include "process/process.hh"
+
 namespace repl
 {
-    enum ServerSpeed
-    {
-        LOW,
-        MEDIUM,
-        HIGH
-    };
-
-    class REPL
+    class REPL : public process::Process
     {
     public:
-        REPL() = default;
+        REPL();
 
         void run();
-
-        // void send_crash_request();
-
-    private:
-        // XXX: List of Process (Server + client)
     };
 } // namespace repl
