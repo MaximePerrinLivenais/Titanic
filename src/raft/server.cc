@@ -457,6 +457,9 @@ void Server::convert_to_candidate()
     voted_for = server_rank;
     vote_count = 1;
 
+    if (check_majority())
+        convert_to_leader();
+
     broadcast_request_vote();
 }
 
