@@ -49,7 +49,8 @@ namespace repl
 
         if (!is_valid_command(command_name))
         {
-            std::clog << command_name << ": Unknown command\n";
+            if (command_name.size())
+                std::clog << command_name << ": Unknown command\n";
             return std::nullopt;
         }
 
