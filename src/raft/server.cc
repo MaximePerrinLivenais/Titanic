@@ -240,9 +240,9 @@ void Server::on_request_vote_rpc(const rpc::RequestVoteRPC& rpc)
         return;
     }
 
-    voted_for = voted_for > 0 ? voted_for : rpc.get_candidate_id();
 
-    auto response = std::make_shared<rpc::RequestVoteResponse>(current_term, voted_for > 0);
+    voted_for = voted_for > 0 ? voted_for : rpc.get_candidate_id();
+    auto response = std::make_shared<rpc::RequestVoteResponse>(current_term, voted_for == rpc.get_candidate_id());
     mpi::MPI_Serialize_and_send(response, rpc.get_candidate_id(), 0, MPI_COMM_WORLD);
 }
 
@@ -544,7 +544,8 @@ void Server::convert_to_leader()
     match_index = std::vector<int>(nb_servers + 1, -1);
 
     // XXX: Debugging information
-    std::cout << "[LEADER] term : " << current_term << ", rank : " << server_rank
+    std::cout << "[LEADER] term : " << current_term << ", rank : " << server_rank <<
+        " with " <<  vote_count << " votes"
               << std::endl;
 
     // Rules for Servers - Leaders:

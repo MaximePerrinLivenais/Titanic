@@ -23,6 +23,7 @@ int main(int argc, char* argv[])
     else if (rank >= 1 && rank <= nb_servers)
     {
         Server server(rank, nb_servers);
+        std::cout << rank << " : I am a server\n";
         server.run();
     }
     else
