@@ -370,6 +370,7 @@ void Server::crash()
 void Server::recovery()
 {
     alive = true;
+    begin = chrono::get_time_milliseconds();
 }
 
 void Server::change_speed(repl::ServerSpeed speed)
