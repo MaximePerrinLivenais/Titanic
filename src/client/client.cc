@@ -36,7 +36,6 @@ void Client::run()
     }
     std::cout << "Client " << client_index << " finished it's journey\n";
 
-    while(1){}
 }
 
 /* ---------------------- Request creation and load ------------------------- */

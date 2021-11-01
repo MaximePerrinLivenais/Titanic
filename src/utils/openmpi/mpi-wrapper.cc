@@ -57,7 +57,7 @@ namespace mpi
     void MPI_Broadcast(const std::string &message, const int tag,
                        const MPI_Comm comm, int rank, int nb_servers)
     {
-        for (int i = 1; i < nb_servers; i++)
+        for (int i = 1; i <= nb_servers; i++)
         {
             if (i != rank)
             {

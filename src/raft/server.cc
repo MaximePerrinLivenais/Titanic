@@ -607,6 +607,7 @@ void Server::on_client_request(const client::ClientRequest& request)
         auto log_entry = rpc::LogEntry(current_term, request.get_command(),
                 request.get_client_index() ,request.get_serial_number());
         log.push_back(log_entry);
+        match_index[server_rank]++;
     }
 }
 
