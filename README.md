@@ -6,7 +6,7 @@ Authors :
 
 - Jérémy d'Auria
 - Maxime Perrin-Livenais
-- Nicolas Guerduadj
+- Nicolas Guerguadj
 - Youssef Ouhmmou
 
 ## Requirements
