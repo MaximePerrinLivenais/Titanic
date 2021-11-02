@@ -149,18 +149,10 @@ namespace raft
         if (rpc.get_prev_log_index() >= log_size ||
                 (get_term_at_prev_log_index(rpc.get_prev_log_index()) != rpc.get_prev_log_term()))
         {
-            if (rpc.get_entries().size() == 0)
-                std::cout << "Its a leader hearbeat\n";
-            std::cout << "In condition 2\n";
-            std::cout << rpc.get_prev_log_index() << " | " << log.size() <<
-                "|" << get_term_at_prev_log_index(rpc.get_prev_log_index()) <<
-                "|" << rpc.get_prev_log_term() << "\n";
-
             auto response = std::make_shared<rpc::AppendEntriesResponse>(
                 current_term, false, rank, get_last_log_index());
             mpi::MPI_Serialize_and_send(response, rpc.get_leader_id(), 0,
                                         MPI_COMM_WORLD);
-
             return;
         }
 
@@ -310,6 +302,7 @@ namespace raft
     void Server::on_repl_crash()
     {
         alive = false;
+        std::cout << "Server " << rank << " crashed\n";
     }
 
 
@@ -334,6 +327,7 @@ namespace raft
     {
         alive = true;
         begin = chrono::get_time_milliseconds();
+        std::cout << "Server " << rank << " recover\n";
     }
 
     /* ---------------------------- Server rules ---------------------------- */
