@@ -490,8 +490,6 @@ namespace raft
 
     void Server::leader_heartbeat()
     {
-        std::cout << "[HEARTBEAT] from leader " << rank << std::endl;
-
         for (unsigned int follower_rank = 1; follower_rank <= nb_servers;
              follower_rank++)
         {
@@ -538,8 +536,6 @@ namespace raft
         // server (initialized to 0, increases monotonically)
         match_index = std::vector<int>(nb_servers + 1, -1);
 
-        std::cout << "[LEADER] term : " << current_term << ", rank : " << rank
-                  << std::endl;
 
         // Rules for Servers - Leaders:
         //      Upon election: send initial empty AppendEntries RPCs (heartbeat)
