@@ -33,8 +33,9 @@ namespace client
 
     void Client::run()
     {
+        //auto bench = chrono
 
-        while (next_request < commands.size())
+        while (next_response < commands.size())
         {
             if (started && next_request == next_response)
             {

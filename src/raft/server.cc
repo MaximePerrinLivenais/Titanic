@@ -278,6 +278,9 @@ namespace raft
 
     void Server::on_client_request(const client::ClientRequest& request)
     {
+        if (!is_alive())
+            return;
+
         // XXX: what if not leader are yet elected
         if (get_status() != ServerStatus::LEADER)
         {
