@@ -42,7 +42,10 @@ Choose the number of clients: 3
 Number of request per client: 25
 ```
 
-The command list per client is automaticaly generated in the script.
+The command list per client is automaticaly generated in the script and are stored in `client_commands`
+directory.
+
+Logs of each server are stored in the `server_logs` directory.
 
 ## Using the REPL
 
