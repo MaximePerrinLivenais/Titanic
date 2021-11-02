@@ -78,7 +78,7 @@ namespace raft
 
     void Server::save_log() const
     {
-        std::string filename = "server_logs/server_nu" + std::to_string(rank) + ".log";
+        std::string filename = "server_logs/server_n" + std::to_string(rank) + ".log";
 
 
         MPI_File file;
@@ -299,6 +299,7 @@ namespace raft
                                            request.get_serial_number());
             if (std::find(log.begin(), log.end(), log_entry) == log.end())
                 log.push_back(log_entry);
+
         }
     }
 
@@ -430,6 +431,7 @@ namespace raft
     void Server::update_commit_index()
     {
         bool updated = true;
+        int log_size = log.size();
         while (updated)
         {
             int n = commit_index + 1;
@@ -441,7 +443,7 @@ namespace raft
                     count++;
             }
 
-            if (2 * count > nb_servers)
+            if (2 * count > nb_servers && n < log_size)
                 commit_index = n;
 
             // If commit_index and n are equal it means we updated it in the

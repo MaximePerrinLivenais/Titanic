@@ -33,7 +33,7 @@ namespace client
 
     void Client::run()
     {
-        //auto bench = chrono
+
 
         while (next_response < commands.size())
         {
@@ -55,6 +55,9 @@ namespace client
 
             check_time_since_last_request();
         }
+
+        auto end =  chrono::get_time_milliseconds() - bench;
+        std::cout << "Client got response on " << end << " ms\n";
         std::cout << "Client " << rank << " finished it's journey\n";
 
         notify_finish_to_all_clients();
@@ -175,6 +178,7 @@ namespace client
     /* ---------------------- Process received message -------------------------- */
     void Client::on_repl_start()
     {
+        bench = chrono::get_time_milliseconds();
         started = true;
     }
 

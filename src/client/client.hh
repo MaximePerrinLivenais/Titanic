@@ -25,7 +25,7 @@ namespace client
         void on_client_response(const ClientResponse& client_rsp);
 
         shared_client_request create_request(const std::string& command);
-
+        unsigned long bench;
     private:
         void load_clients_command();
 
