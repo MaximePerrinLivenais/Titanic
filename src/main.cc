@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
         client.run();
     }
 
+    /* If all clients finished we shutdown the system */
     if (client::Client::are_client_finished(nb_clients))
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));

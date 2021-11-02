@@ -26,24 +26,17 @@ namespace client
     {
         load_clients_command();
 
-        // TODO: use mt19937 instead
+        /* Select server rank randomly for sending */
         srand(time(0) + rank);
         last_known_leader = (rand() % server_last_index) + 1;
     }
 
     void Client::run()
     {
-
-
         while (next_response < commands.size())
         {
             if (started && next_request == next_response)
-            {
-                //std::this_thread::sleep_for(std::chrono::milliseconds(200));
                 send_next_request();
-            }
-
-
 
             auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
             if (query_str_opt.has_value())
@@ -56,12 +49,7 @@ namespace client
             check_time_since_last_request();
         }
 
-        auto end =  chrono::get_time_milliseconds() - bench;
-        std::cout << "Client got response on " << end << " ms\n";
-        std::cout << "Client " << rank << " finished it's journey\n";
-
         notify_finish_to_all_clients();
-        std::cout << Client::client_finished << " finished\n";
     }
 
 
@@ -81,7 +69,7 @@ namespace client
 
     bool Client::are_client_finished(int nb_clients)
     {
-        std::cout << "Client_finished = " << client_finished << " | " << nb_clients << "\n";
+        std::cout << "Client_finished = " << client_finished << " / " << nb_clients << "\n";
         return client_finished >= nb_clients;
     }
 
@@ -111,7 +99,6 @@ namespace client
 
         MPI_File file;
         MPI_Status status;
-        // TODO: Check if it is open
 
         auto rc = MPI_File_open(MPI_COMM_SELF, filename.data(), MPI_MODE_RDONLY,
                 MPI_INFO_NULL, &file);

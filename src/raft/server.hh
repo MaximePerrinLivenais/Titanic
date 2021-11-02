@@ -19,7 +19,6 @@ namespace raft
     public:
         Server(const unsigned int server_rank, const unsigned int nb_servers);
 
-        // XXX: For testing purpose
         void set_status(const ServerStatus& server_status);
         ServerStatus get_status() const;
 
@@ -74,7 +73,6 @@ namespace raft
         int get_term_at_prev_log_index(int prev_log_index);
 
         // Repl modifiers
-        // ServerStatus
         bool alive = true;
         int latency = 0;
 

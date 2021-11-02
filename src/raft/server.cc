@@ -35,11 +35,10 @@ namespace raft
 
     void Server::run()
     {
-        // XXX: Debugging information
         std::cout << "[RUNNING] Server" << std::endl;
         while (true)
         {
-            // Maybe do it several time before each I/O function
+            /* Speed factor */
             std::this_thread::sleep_for(std::chrono::milliseconds(latency));
 
             // Rules for Servers - Followers (§5.2):
@@ -47,10 +46,6 @@ namespace raft
             auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
             while (query_str_opt.has_value())
             {
-                // XXX: Debugging information
-                // std::cout << "Receive: " << query_str_opt.value() <<
-                // std::endl;
-
                 auto query =
                     message::Message::deserialize(query_str_opt.value());
 
@@ -62,9 +57,11 @@ namespace raft
             if (!alive)
                 continue;
 
+            /* Save log to file */
             save_log();
 
             apply_rules();
+
             if (current_status == ServerStatus::LEADER)
                 apply_leader_rules();
             else if (current_status == ServerStatus::CANDIDATE
@@ -129,7 +126,6 @@ namespace raft
             convert_to_follower();
 
         // AppendEntries RPC - Receiver implementation
-
         // 1. Reply false if term < currentTerm (§5.1)
         if (rpc.get_term() < current_term)
         {
@@ -177,18 +173,9 @@ namespace raft
         {
             for (const auto& entry : rpc.get_entries())
             {
-                // XXX: we might do something smarter using Log Matching
-                // property
                 if (std::find(log.begin(), log.end(), entry) == log.end())
-                {
-                    //std::cout << "Server n" << rank << " add to its log\n"
-                    //          << std::flush;
-
                     log.emplace_back(entry);
-                }
             }
-            // log.insert(log.end(), rpc.get_entries().begin(),
-            // rpc.get_entries().end());
         }
 
         // 5. If leaderCommit > commitIndex,
@@ -218,9 +205,6 @@ namespace raft
         //        nextIndex and retry (§5.3)
         if (rpc.get_success())
         {
-            // last_log_index might changed between the AppendEntries and the
-            // response we need the follower to send the index where he stops
-            // its log and use rpc.last_log_index instead
             match_index[follower_index] = rpc.get_last_log_index();
             next_index[follower_index] = match_index[follower_index] + 1;
         }
@@ -246,7 +230,6 @@ namespace raft
 
         // 2. If votedFor is null or candidateId, and candidate’s log is at
         // least as up-to-date as receiver’s log, grant vote (§5.2, §5.4)
-        // FIXME: Check log indexes
         if (!candidate_log_is_up_to_date(rpc.get_last_log_index(),
                                          rpc.get_last_log_term()))
         {
@@ -281,10 +264,9 @@ namespace raft
         if (!is_alive())
             return;
 
-        // XXX: what if not leader are yet elected
         if (get_status() != ServerStatus::LEADER)
         {
-            // send back message
+            // send back message to client with the leader rank
             auto response =
                 client::ClientResponse::not_a_leader_response(voted_for);
             std::string message = response.serialize();
@@ -293,7 +275,6 @@ namespace raft
         }
         else
         {
-            // handle request, send appendentries to follower etc ...
             auto log_entry = rpc::LogEntry(current_term, request.get_command(),
                                            request.get_client_index(),
                                            request.get_serial_number());
@@ -312,8 +293,6 @@ namespace raft
 
     void Server::on_repl_speed(const repl::RequestSpeedREPL& repl)
     {
-        // I prefer to set latency related to heartbeat_time
-        // Maybe set the speed randomly at each loop
         auto speed = repl.get_speed();
 
         if (speed == repl::LOW)
@@ -343,7 +322,6 @@ namespace raft
         //      log[lastApplied] to state machine (§5.3)
         if (commit_index > last_applied)
         {
-            //std::cout << "Apply log\n";
             last_applied++;
 
             // Answer to client
@@ -512,8 +490,7 @@ namespace raft
 
     void Server::leader_heartbeat()
     {
-        //std::cout << "[HEARTBEAT] from leader " << rank
-          //        << "------------------------------" << std::endl;
+        std::cout << "[HEARTBEAT] from leader " << rank << std::endl;
 
         for (unsigned int follower_rank = 1; follower_rank <= nb_servers;
              follower_rank++)
@@ -549,7 +526,6 @@ namespace raft
         current_status = ServerStatus::LEADER;
         voted_for = 0;
 
-        // XXX: Debugging information
         std::cout << "[LEADER] term : " << current_term << ", rank : " << rank <<
             " with " <<  vote_count << " votes"
                   << std::endl;
@@ -562,7 +538,6 @@ namespace raft
         // server (initialized to 0, increases monotonically)
         match_index = std::vector<int>(nb_servers + 1, -1);
 
-        // XXX: Debugging information
         std::cout << "[LEADER] term : " << current_term << ", rank : " << rank
                   << std::endl;
 
@@ -594,7 +569,6 @@ namespace raft
     {
         int index = get_prev_log_index(rank);
 
-        // XXX: Decide if we want to return 0 as first term or -1
         return index >= 0 ? log[index].get_term() : -1;
     }
 

@@ -6,9 +6,6 @@
 #include "request-start-repl.hh"
 #include "request-recovery-repl.hh"
 
-// TODO remove header
-#include <iostream>
-
 namespace repl
 {
     ReplMsg::ReplMsg(const REPL_MSG_TYPE repl_type)

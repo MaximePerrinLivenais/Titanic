@@ -51,7 +51,6 @@ namespace client
 
         static const unsigned resend_timeout = 1500;
 
-        // Use with std::vector<std::string> commands;
         unsigned next_request = 0;
         unsigned next_response = 0;
 
