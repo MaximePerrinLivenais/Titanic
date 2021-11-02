@@ -1,3 +1,4 @@
+#include <iostream>
 #include "client-response.hh"
 
 #include "client/client.hh"
@@ -20,8 +21,15 @@ namespace client
 
     void ClientResponse::apply(process::Process& process)
     {
-        auto& client = dynamic_cast<Client&>(process);
-        client.on_client_response(*this);
+        try
+        {
+            auto& client = dynamic_cast<Client&>(process);
+            client.on_client_response(*this);
+        }
+        catch(const std::bad_alloc&)
+        {
+            std::cout << "Could not apply client response\n";
+        }
     }
 
     json ClientResponse::serialize_json() const

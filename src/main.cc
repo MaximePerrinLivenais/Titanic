@@ -36,8 +36,11 @@ int main(int argc, char* argv[])
     if (client::Client::are_client_finished(nb_clients))
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::cout << "System ends\n";
         MPI_Abort(MPI_COMM_WORLD, 0);
     }
+
+    MPI_Finalize();
 
     return 0;
 }

@@ -11,8 +11,8 @@
 
 namespace raft
 {
-    constexpr unsigned int MIN_TIMEOUT_MILLI = 1500;
-    constexpr unsigned int MAX_TIMEOUT_MILLI = 3000;
+    constexpr unsigned int MIN_TIMEOUT_MILLI = 150;
+    constexpr unsigned int MAX_TIMEOUT_MILLI = 300;
 
     Server::Server(const unsigned int server_rank,
                    const unsigned int nb_servers)
@@ -170,7 +170,13 @@ namespace raft
         }
 
         if (rpc.get_entries().size())
+        {
+            if (log_it == log.begin())
+            {
+                std::cout << "\n\n\n\n AID MOUBARAK\n\n\n\n";
+            }
             log.erase(log_it, log.end());
+        }
 
         // 4.  Append any new entries not already in the log
         if (rpc.get_entries().size())

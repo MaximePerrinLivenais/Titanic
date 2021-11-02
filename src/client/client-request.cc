@@ -1,6 +1,8 @@
+#include <iostream>
 #include "client-request.hh"
 
 #include "raft/server.hh"
+#include "client/client.hh"
 
 namespace client
 {
@@ -20,8 +22,23 @@ namespace client
 
     void ClientRequest::apply(process::Process& process)
     {
-        auto& server = dynamic_cast<raft::Server&>(process);
-        server.on_client_request(*this);
+        try
+        {
+            auto& server = dynamic_cast<raft::Server&>(process);
+            server.on_client_request(*this);
+        }
+        catch(const std::bad_cast&)
+        {
+            try
+            {
+                auto& client = dynamic_cast<client::Client&>(process);
+                client.on_client_request(*this);
+            }
+            catch(const std::bad_cast&)
+            {
+                std::cout << "Could not apply client request\n";
+            }
+        }
     }
 
     json ClientRequest::serialize_json() const

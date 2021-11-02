@@ -92,7 +92,7 @@ namespace client
         for (unsigned client_rank = server_last_index + 1; client_rank < size; client_rank++)
         {
             if (client_rank != rank)
-                MPI_Isend(message.data(), message.size(), MPI_CHAR, rank,
+                MPI_Isend(message.data(), message.size(), MPI_CHAR, client_rank,
                         0, MPI_COMM_WORLD, &req);
         }
     }
@@ -183,9 +183,8 @@ namespace client
         send_next_request();
     }
 
-    void Client::on_client_request(const ClientRequest& client_req)
+    void Client::on_client_request([[maybe_unused]] const ClientRequest& client_req)
     {
-        (void)client_req;
         std::cout << "Received finished request on client" << rank << "\n";
         Client::client_finished++;
     }
