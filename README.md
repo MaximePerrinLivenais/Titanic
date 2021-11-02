@@ -1,6 +1,6 @@
-# RAFT Concensus Algorithm for Log Replication
+# Log replication with RAFT consensus algorithm
 
-Project realized for the ALGOREP teaching at EPITA.
+Project realized for the ALGOREP course of Etienne Renault at EPITA.
 
 Authors :
 
@@ -8,10 +8,6 @@ Authors :
 - Maxime Perrin-Livenais
 - Nicolas Guerduadj
 - Youssef Ouhmmou
-
-Supervised by:
-
-- Etienne Renault
 
 ## Requirements
 
@@ -56,6 +52,8 @@ When running you can interact with the system, here is the list of valid command
 - `CRASH <SERVER_TARGET>`: Crash the server
 - `SPEED <SPEED_OPTION> <SERVER_TARGET>`: Set the speed of the server
   - Valid `<SPEED_OPTION>`: `LOW, MEDIUM, HIGH`
+- `SEND <CLIENT_TARGET>`: Client send one request to servers
+- `START <CLIENT_TARGET>`: Start client, it will send all its requests one by one
 
 ### Advice
 
@@ -69,3 +67,13 @@ $ tty
 # On the first one
 $ ./launch.sh > /dev/pts/1
 ```
+
+## Check results
+
+At the end of the execution, you can run
+
+```sh
+./check_logs.sh
+```
+
+to check if all server logs are identical.

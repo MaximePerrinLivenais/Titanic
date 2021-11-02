@@ -181,8 +181,8 @@ namespace raft
                 // property
                 if (std::find(log.begin(), log.end(), entry) == log.end())
                 {
-                    std::cout << "Server n" << rank << " add to its log\n"
-                              << std::flush;
+                    //std::cout << "Server n" << rank << " add to its log\n"
+                    //          << std::flush;
 
                     log.emplace_back(entry);
                 }
@@ -343,7 +343,7 @@ namespace raft
         //      log[lastApplied] to state machine (§5.3)
         if (commit_index > last_applied)
         {
-            std::cout << "Apply log\n";
+            //std::cout << "Apply log\n";
             last_applied++;
 
             // Answer to client
