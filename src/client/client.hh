@@ -11,6 +11,8 @@ class Client
 
         void run();
 
+        static bool are_client_finished(int nb_clients);
+
     private:
 
         void load_clients_command();
@@ -18,6 +20,7 @@ class Client
         void process_repl_message(message::shared_msg query);
         void process_client_message(message::shared_msg query);
         void check_time_since_last_request();
+        void notify_finish_to_all_clients();
 
         /* Send request */
         void send_request(const client::ClientRequest& request,
@@ -44,4 +47,7 @@ class Client
         int last_known_leader;
 
         std::vector<client::ClientRequest> commands;
+
+        static int client_finished;
 };
+

@@ -10,6 +10,7 @@
 int main(int argc, char* argv[])
 {
     int nb_servers = std::stoi(argv[1]);
+    int nb_clients = std::stoi(argv[2]);
     int rank;
 
     MPI_Init(&argc, &argv);
@@ -33,6 +34,8 @@ int main(int argc, char* argv[])
         client.run();
     }
 
+    if (Client::are_client_finished(nb_clients))
+        MPI_Abort(MPI_COMM_WORLD, 0);
 
     MPI_Finalize();
     return 2;

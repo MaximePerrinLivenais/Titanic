@@ -10,6 +10,8 @@
 
 #include <unistd.h>
 
+int Client::client_finished = 0;
+
 Client::Client(const int server_last_index, unsigned int client_index) :
     serial_number(0), client_index(client_index), server_last_index(server_last_index)
 {
@@ -44,7 +46,26 @@ void Client::run()
     }
     std::cout << "Client " << client_index << " finished it's journey\n";
 
+    notify_finish_to_all_clients();
 }
+
+void Client::notify_finish_to_all_clients()
+{
+    Client::client_finished++;
+    unsigned size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
+
+    auto request = create_request("finished");
+    auto message = request.serialize();
+    MPI_Request req;
+
+    for (unsigned rank = server_last_index + 1; rank < size; rank++)
+    {
+        if (rank != client_index)
+            MPI_Isend(message.data(), message.size(), MPI_CHAR, rank,
+                    0, MPI_COMM_WORLD, &req);
+    }
+}
+
 
 void Client::check_time_since_last_request()
 {
@@ -93,7 +114,11 @@ client::ClientRequest Client::create_request(const std::string& command)
     return client::ClientRequest(command, serial_number, client_index);
 }
 
-
+bool Client::are_client_finished(int nb_clients)
+{
+    std::cout << "Client_finished = " << client_finished << " | " << nb_clients << "\n";
+    return client_finished >= nb_clients;
+}
 
 
 /* --------------------------- Send request --------------------------------- */
@@ -152,7 +177,11 @@ void Client::process_client_message(message::shared_msg message)
     auto client_msg = std::dynamic_pointer_cast<client::ClientMsg>(message);
 
     if (client_msg->get_client_msg_type() != client::CLIENT_RESPONSE)
+    {
+        std::cout << "Received finished request on client" << client_index << "\n";
+        Client::client_finished++;
         return;
+    }
 
 
     auto client_rsp = std::dynamic_pointer_cast<client::ClientResponse>(client_msg);

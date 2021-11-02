@@ -98,9 +98,7 @@ namespace repl
         {
             auto msg = build_message_from_input(nb_process);
             if (msg.has_value())
-            {
                 msg.value()->send();
-            }
         }
     }
 } // namespace repl
