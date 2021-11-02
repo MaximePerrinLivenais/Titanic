@@ -4,6 +4,7 @@
 #include "repl/repl-message.hh"
 #include "client-response.hh"
 #include "client-request.hh"
+#include "client-finish.hh"
 #include "utils/chrono/chrono.hh"
 #include <sstream>
 #include <thread>
@@ -85,8 +86,8 @@ namespace client
         Client::client_finished++;
         unsigned size = mpi::MPI_Get_group_comm_size(MPI_COMM_WORLD);
 
-        auto request = create_request("finished");
-        auto message = request->serialize();
+        auto request = ClientFinish();
+        auto message = request.serialize();
         MPI_Request req;
 
         for (unsigned client_rank = server_last_index + 1; client_rank < size; client_rank++)
@@ -183,7 +184,7 @@ namespace client
         send_next_request();
     }
 
-    void Client::on_client_request([[maybe_unused]] const ClientRequest& client_req)
+    void Client::on_client_request([[maybe_unused]] const ClientFinish& client_fin)
     {
         std::cout << "Received finished request on client" << rank << "\n";
         Client::client_finished++;

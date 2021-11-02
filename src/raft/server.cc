@@ -170,13 +170,7 @@ namespace raft
         }
 
         if (rpc.get_entries().size())
-        {
-            if (log_it == log.begin())
-            {
-                std::cout << "\n\n\n\n AID MOUBARAK\n\n\n\n";
-            }
             log.erase(log_it, log.end());
-        }
 
         // 4.  Append any new entries not already in the log
         if (rpc.get_entries().size())

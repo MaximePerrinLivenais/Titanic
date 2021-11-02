@@ -9,6 +9,7 @@ CLIENT = \
          src/client/client-message.cc \
          src/client/client-request.cc \
          src/client/client-response.cc \
+         src/client/client-finish.cc \
          $(NULL)
 
 MESSAGE = \
