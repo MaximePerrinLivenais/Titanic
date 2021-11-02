@@ -5,6 +5,8 @@
 #include "client-response.hh"
 #include "utils/chrono/chrono.hh"
 #include <sstream>
+#include <thread>
+#include <chrono>
 
 #include <unistd.h>
 
@@ -25,7 +27,10 @@ void Client::run()
     {
         //sleep(1);
         if (started && next_request == next_response)
+        {
+            //std::this_thread::sleep_for(std::chrono::milliseconds(200));
             send_next_request();
+        }
 
 
         auto query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);

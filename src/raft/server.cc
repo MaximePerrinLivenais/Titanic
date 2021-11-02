@@ -94,7 +94,7 @@ void Server::run()
 
 void Server::save_log() const
 {
-    std::string filename = "server_logs/server_n" + std::to_string(server_rank) + ".log";
+    std::string filename = "server_logs/server_nu" + std::to_string(server_rank) + ".log";
 
     MPI_File file;
     // TODO: Check if it is open
@@ -281,6 +281,7 @@ void Server::apply_rules()
         //
         if (current_status == ServerStatus::LEADER)
         {
+            //std::cout << "Leader " << server_rank << " send back response n " << last_applied << "\n";
             client::ClientResponse response(0, true, 0);
             std::string message = response.serialize();
 
@@ -425,7 +426,7 @@ void Server::update_commit_index()
     {
         int n = commit_index + 1;
 
-        int count = 0;
+        int count = 1;
         for (int i = 1; i <= nb_servers; i++)
         {
             if (match_index[i] >= n)
@@ -621,7 +622,6 @@ void Server::on_client_request(const client::ClientRequest& request)
         if (std::find(log.begin(), log.end(), log_entry) == log.end())
         {
             log.push_back(log_entry);
-            match_index[server_rank]++;
         }
     }
 }
