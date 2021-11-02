@@ -9,6 +9,7 @@ CLIENT = \
          src/client/client-message.cc \
          src/client/client-request.cc \
          src/client/client-response.cc \
+         src/client/client-finish.cc \
          $(NULL)
 
 MESSAGE = \
@@ -26,6 +27,8 @@ REPL = \
         src/repl/request-crash-repl.cc \
         src/repl/request-start-repl.cc \
         src/repl/request-speed-repl.cc \
+        src/repl/request-send-repl.cc \
+        src/repl/request-recovery-repl.cc \
         $(NULL)
 
 RPC = \

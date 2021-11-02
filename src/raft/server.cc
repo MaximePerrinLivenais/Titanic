@@ -1,5 +1,6 @@
 #include "server.hh"
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <thread>
@@ -10,8 +11,8 @@
 
 namespace raft
 {
-    constexpr unsigned int MIN_TIMEOUT_MILLI = 1500;
-    constexpr unsigned int MAX_TIMEOUT_MILLI = 3000;
+    constexpr unsigned int MIN_TIMEOUT_MILLI = 150;
+    constexpr unsigned int MAX_TIMEOUT_MILLI = 300;
 
     Server::Server(const unsigned int server_rank,
                    const unsigned int nb_servers)
@@ -53,15 +54,7 @@ namespace raft
                 auto query =
                     message::Message::deserialize(query_str_opt.value());
 
-                // XXX
-                // here call apply_message
-                // In the case of rpc -> do the same as apply_query
-                // In the case of repl -> apply directly
-                // XXX: apply message for CRASHED server only if from REPL
-
                 query->apply(*this);
-
-                // std::cout << "My status is: " << current_status << std::endl;
 
                 query_str_opt = mpi::MPI_Listen(MPI_COMM_WORLD);
             }
@@ -82,22 +75,21 @@ namespace raft
         }
     }
 
+
     void Server::save_log() const
     {
-        std::string filename =
-            "server_logs/server_n" + std::to_string(rank) + ".log";
+        std::string filename = "server_logs/server_nu" + std::to_string(rank) + ".log";
+
 
         MPI_File file;
-        // TODO: Check if it is open
-
         auto rc = MPI_File_open(MPI_COMM_SELF, filename.data(),
                                 MPI_MODE_WRONLY | MPI_MODE_CREATE,
                                 MPI_INFO_NULL, &file);
 
         if (rc)
             std::cout << "ERROR WHILE OPENING : " << filename
-                      << "==================================\n"
-                      << std::flush;
+                << "==================================\n"
+                << std::flush;
 
         MPI_Status status;
 
@@ -105,14 +97,14 @@ namespace raft
         {
             std::string command = entry.get_command() + "\n";
             MPI_File_write(file, command.data(), command.size(), MPI_CHAR,
-                           &status);
+                    &status);
         }
 
         MPI_File_close(&file);
     }
 
-    /* ---------- Server reactions functions according to RPC type ---------- */
 
+    /* ---------- Server reactions functions according to RPC type ---------- */
     void Server::on_rpc(rpc::RemoteProcedureCall& rpc)
     {
         if (!alive)
@@ -153,8 +145,9 @@ namespace raft
 
         // 2. Reply false if log doesn’t contain an entry at prevLogIndex whose
         // term matches prevLogTerm (§5.3)
-        if (get_term_at_prev_log_index(rpc.get_prev_log_index())
-            != rpc.get_prev_log_term())
+        int log_size = log.size();
+        if (rpc.get_prev_log_index() >= log_size ||
+                (get_term_at_prev_log_index(rpc.get_prev_log_index()) != rpc.get_prev_log_term()))
         {
             auto response = std::make_shared<rpc::AppendEntriesResponse>(
                 current_term, false, rank, get_last_log_index());
@@ -233,7 +226,7 @@ namespace raft
         }
         else
         {
-            next_index[follower_index]--;
+            next_index[follower_index] = std::max(0, next_index[follower_index] - 1);
         }
     }
 
@@ -265,11 +258,9 @@ namespace raft
         }
 
         voted_for = voted_for > 0 ? voted_for : rpc.get_candidate_id();
-
-        auto response = std::make_shared<rpc::RequestVoteResponse>(
-            current_term, voted_for > 0);
-        mpi::MPI_Serialize_and_send(response, rpc.get_candidate_id(), 0,
-                                    MPI_COMM_WORLD);
+        auto response = std::make_shared<rpc::RequestVoteResponse>(current_term,
+                voted_for == rpc.get_candidate_id());
+        mpi::MPI_Serialize_and_send(response, rpc.get_candidate_id(), 0, MPI_COMM_WORLD);
     }
 
     void Server::on_request_vote_response(const rpc::RequestVoteResponse& rpc)
@@ -303,14 +294,17 @@ namespace raft
             auto log_entry = rpc::LogEntry(current_term, request.get_command(),
                                            request.get_client_index(),
                                            request.get_serial_number());
-            log.push_back(log_entry);
+            if (std::find(log.begin(), log.end(), log_entry) == log.end())
+                log.push_back(log_entry);
         }
     }
 
     void Server::on_repl_crash()
     {
         alive = false;
+        std::cout << "Server " << rank << " crashed\n";
     }
+
 
     void Server::on_repl_speed(const repl::RequestSpeedREPL& repl)
     {
@@ -329,6 +323,13 @@ namespace raft
                   << "\n";
     }
 
+    void Server::on_repl_recovery()
+    {
+        alive = true;
+        begin = chrono::get_time_milliseconds();
+        std::cout << "Server " << rank << " recover\n";
+    }
+
     /* ---------------------------- Server rules ---------------------------- */
 
     void Server::apply_rules()
@@ -340,7 +341,6 @@ namespace raft
         {
             std::cout << "Apply log\n";
             last_applied++;
-            // XXX: Apply it
 
             // Answer to client
             if (current_status == ServerStatus::LEADER)
@@ -412,6 +412,8 @@ namespace raft
         update_commit_index();
     }
 
+
+
     /* -------------------- Useful auxialiary functions -------------------- */
 
     void Server::set_current_term(const int current_term)
@@ -429,15 +431,13 @@ namespace raft
         {
             int n = commit_index + 1;
 
-            unsigned int count = 0;
+            unsigned int count = 1;
             for (unsigned int i = 1; i <= nb_servers; i++)
             {
                 if (match_index[i] >= n)
                     count++;
             }
 
-            // XXX: get real number of servers to check majority
-            // check next_index.size()
             if (2 * count > nb_servers)
                 commit_index = n;
 
@@ -464,6 +464,9 @@ namespace raft
 
         voted_for = rank;
         vote_count = 1;
+
+        if (check_majority())
+            convert_to_leader();
 
         broadcast_request_vote();
     }
@@ -504,8 +507,8 @@ namespace raft
 
     void Server::leader_heartbeat()
     {
-        std::cout << "[HEARTBEAT] from leader " << rank
-                  << "------------------------------" << std::endl;
+        //std::cout << "[HEARTBEAT] from leader " << rank
+          //        << "------------------------------" << std::endl;
 
         for (unsigned int follower_rank = 1; follower_rank <= nb_servers;
              follower_rank++)
@@ -540,6 +543,11 @@ namespace raft
     {
         current_status = ServerStatus::LEADER;
         voted_for = 0;
+
+        // XXX: Debugging information
+        std::cout << "[LEADER] term : " << current_term << ", rank : " << rank <<
+            " with " <<  vote_count << " votes"
+                  << std::endl;
 
         // For each server, index of the next log entry to send to that server
         // (initialized to leader last log index + 1)
@@ -590,7 +598,6 @@ namespace raft
         return prev_log_index >= 0 ? log[prev_log_index].get_term() : -1;
     }
 
-    // XXX: For testing purpose
     void Server::set_status(const ServerStatus& server_status)
     {
         current_status = server_status;

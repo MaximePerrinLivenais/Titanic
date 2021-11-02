@@ -1,6 +1,8 @@
+#include <iostream>
 #include "client-request.hh"
 
 #include "raft/server.hh"
+#include "client/client.hh"
 
 namespace client
 {

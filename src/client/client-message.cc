@@ -4,6 +4,7 @@
 
 #include "client-request.hh"
 #include "client-response.hh"
+#include "client-finish.hh"
 
 namespace client
 {
@@ -33,6 +34,8 @@ namespace client
             return std::make_shared<ClientRequest>(json_obj);
         case CLIENT_RESPONSE:
             return std::make_shared<ClientResponse>(json_obj);
+        case CLIENT_FINISH:
+            return std::make_shared<ClientFinish>();
         }
 
         throw std::invalid_argument(

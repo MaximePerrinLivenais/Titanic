@@ -26,6 +26,13 @@ done
 
 echo "localhost slots=$nb_process" >hostfile
 
-mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0 ./titanic $nb_servers $nb_clients # &> output.txt
-# mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0 valgrind --suppressions=/usr/share/openmpi/openmpi-valgrind.supp ./titanic $nb_servers $nb_clients &>output.txt
+
 #mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0  xterm -e gdb --args ./titanic $nb_servers $nb_clients
+#exit 1
+
+if [ -z "$1" ]; then
+    mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0 ./titanic $nb_servers $nb_clients 2> err.log
+else
+    mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0 ./titanic $nb_servers $nb_clients > $1 2> err.log
+fi
+#mpirun -hostfile hostfile --mca opal_warn_on_missing_libcuda 0 valgrind --suppressions=/usr/share/openmpi/openmpi-valgrind.supp ./titanic $nb_servers $nb_clients &>output.txt

@@ -28,11 +28,4 @@ namespace repl
         }
     }
 
-    json RequestStartREPL::serialize_json() const
-    {
-        json serialization = ReplMsg::serialize_json();
-
-        return serialization;
-    }
-
 } // namespace repl

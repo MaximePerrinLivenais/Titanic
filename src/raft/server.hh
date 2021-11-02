@@ -37,6 +37,7 @@ namespace raft
 
         void on_repl_crash();
         void on_repl_speed(const repl::RequestSpeedREPL& repl);
+        void on_repl_recovery();
 
         bool is_alive() const;
 
@@ -73,7 +74,6 @@ namespace raft
         int get_term_at_prev_log_index(int prev_log_index);
 
         // Repl modifiers
-        // XXX: maybe add crash to ServerStatus or use ElectionStatus +
         // ServerStatus
         bool alive = true;
         int latency = 0;

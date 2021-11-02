@@ -13,6 +13,8 @@ namespace repl
         SPEED,
         CRASH,
         START,
+        SEND,
+        RECOVERY,
     };
 
     class ReplMsg;
@@ -29,7 +31,7 @@ namespace repl
         static shared_repl_msg deserialize(const std::string& message);
 
     protected:
-        virtual json serialize_json() const = 0;
+        virtual json serialize_json() const;
 
         const REPL_MSG_TYPE repl_msg_type;
     };

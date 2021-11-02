@@ -27,12 +27,4 @@ namespace repl
             std::cerr << "Crash message could not be applied\n";
         }
     }
-
-    json RequestCrashREPL::serialize_json() const
-    {
-        json serialization = ReplMsg::serialize_json();
-
-        return serialization;
-    }
-
 } // namespace repl

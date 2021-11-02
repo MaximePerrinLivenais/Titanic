@@ -11,8 +11,5 @@ namespace repl
         explicit RequestStartREPL(const json& json_obj);
 
         void apply(process::Process& process) final;
-
-    private:
-        json serialize_json() const;
     };
 } // namespace repl

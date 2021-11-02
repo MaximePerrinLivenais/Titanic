@@ -4,11 +4,11 @@
 
 namespace repl
 {
-    class RequestCrashREPL : public ReplMsg
+    class RequestRecoveryREPL : public ReplMsg
     {
     public:
-        explicit RequestCrashREPL();
-        explicit RequestCrashREPL(const json& json_obj);
+        explicit RequestRecoveryREPL();
+        explicit RequestRecoveryREPL(const json& json_obj);
 
         void apply(process::Process& process) final;
     };

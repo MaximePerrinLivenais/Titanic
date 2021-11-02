@@ -7,7 +7,8 @@ namespace client
     enum CLIENT_MSG_TYPE
     {
         CLIENT_REQUEST,
-        CLIENT_RESPONSE
+        CLIENT_RESPONSE,
+        CLIENT_FINISH
     };
 
     class ClientMsg;
@@ -23,7 +24,7 @@ namespace client
         static shared_client_msg deserialize(const std::string& message);
 
     protected:
-        virtual json serialize_json() const = 0;
+        virtual json serialize_json() const;
 
         const CLIENT_MSG_TYPE client_msg_type;
     };

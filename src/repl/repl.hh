@@ -1,5 +1,8 @@
 #pragma once
 
+#include <optional>
+#include <string>
+#include "server-speed.hh"
 #include "process/process.hh"
 
 namespace repl
@@ -11,4 +14,6 @@ namespace repl
 
         void run();
     };
+
+    std::optional<ServerSpeed> str_to_server_speed(const std::string& speed_str);
 } // namespace repl
