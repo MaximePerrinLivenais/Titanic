@@ -1,53 +1,65 @@
 #pragma once
 
+#include <vector>
+
+#include "client-response.hh"
+#include "process/process.hh"
+
+// XXX: A rm quand plus besoin de send_request
 #include "client/client-request.hh"
 
-class Client
+namespace client
 {
+    class Client : public process::Process
+    {
     public:
         Client(const int server_last_index, unsigned int client_index);
-
-        client::ClientRequest create_request(const std::string& command);
 
         void run();
 
         static bool are_client_finished(int nb_clients);
 
+        // Message callbck
+        void on_repl_start();
+        void on_repl_send();
+        void on_client_request(const ClientRequest& client_req);
+        void on_client_response(const ClientResponse& client_rsp);
+
+        shared_client_request create_request(const std::string& command);
+
     private:
-
-        void load_clients_command();
-        void process_message(message::shared_msg query);
-        void process_repl_message(message::shared_msg query);
-        void process_client_message(message::shared_msg query);
-        void check_time_since_last_request();
-        void notify_finish_to_all_clients();
-
-        /* Send request */
-        void send_request(const client::ClientRequest& request,
-            unsigned int server_index);
-        void send_next_request();
-        void send_again();
+            void load_clients_command();
 
 
-        /* -------- Attributes -------- */
-        unsigned int serial_number;
-        const unsigned int client_index;
-        const int server_last_index;
 
-        unsigned long time_since_last_request;
+            void check_time_since_last_request();
+            void notify_finish_to_all_clients();
 
-        bool started = false;
+            /* Send request */
+            void send_request(const shared_client_request& request,
+                    unsigned int server_index);
+            void send_next_request();
+            void send_again();
 
-        static const unsigned resend_timeout = 800;
 
-        // Use with std::vector<std::string> commands;
-        unsigned next_request = 0;
-        unsigned next_response = 0;
+            /* -------- Attributes -------- */
+            unsigned int serial_number;
+            const int server_last_index;
 
-        int last_known_leader;
+            unsigned long time_since_last_request;
 
-        std::vector<client::ClientRequest> commands;
+            bool started = false;
 
-        static int client_finished;
-};
+            static const unsigned resend_timeout = 800;
 
+            // Use with std::vector<std::string> commands;
+            unsigned next_request = 0;
+            unsigned next_response = 0;
+
+            int last_known_leader;
+
+            std::vector<shared_client_request> commands;
+
+            static int client_finished;
+    };
+} // namespace client

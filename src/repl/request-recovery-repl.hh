@@ -7,16 +7,9 @@ namespace repl
     class RequestRecoveryREPL : public ReplMsg
     {
     public:
-        explicit RequestRecoveryREPL(unsigned int target_process);
-
+        explicit RequestRecoveryREPL();
         explicit RequestRecoveryREPL(const json& json_obj);
 
-        void send();
-
-    private:
-        json serialize_json() const;
-        void apply(Server& server);
-
-        unsigned int target_process;
+        void apply(process::Process& process) final;
     };
 } // namespace repl

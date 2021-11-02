@@ -28,16 +28,10 @@ namespace repl
 
         REPL_MSG_TYPE get_repl_msg_type() const;
 
-        // const std::string serialize() const;
         static shared_repl_msg deserialize(const std::string& message);
 
-        void apply_message(Server& server) final;
-
-        virtual void send() = 0;
-
     protected:
-        virtual json serialize_json() const = 0;
-        virtual void apply(Server& server) = 0;
+        virtual json serialize_json() const;
 
         const REPL_MSG_TYPE repl_msg_type;
     };

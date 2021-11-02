@@ -1,40 +1,46 @@
 #include "request-speed-repl.hh"
 
+#include <iostream>
+
 #include "raft/server.hh"
 #include "utils/openmpi/mpi-wrapper.hh"
 
 namespace repl
 {
-    RequestSpeedREPL::RequestSpeedREPL(unsigned int target_process,
-            ServerSpeed speed)
+    RequestSpeedREPL::RequestSpeedREPL(ServerSpeed speed)
         : ReplMsg(REPL_MSG_TYPE::SPEED)
-        , target_process(target_process), speed(speed)
+        , speed(speed)
     {}
 
     RequestSpeedREPL::RequestSpeedREPL(const json& json_obj)
-        : RequestSpeedREPL(json_obj["target_process"], json_obj["speed"])
+        : ReplMsg(json_obj["repl_msg_type"])
+        , speed(json_obj["speed"])
     {}
 
-    void RequestSpeedREPL::send()
+    void RequestSpeedREPL::apply(process::Process& process)
     {
-        // TODO: move this function to ReplMsg as it is the same for the 3 children class
-        const std::string msg_serialized = serialize();
-
-        MPI_Send(msg_serialized.c_str(), msg_serialized.length(), MPI_CHAR,
-                 target_process, 0, MPI_COMM_WORLD);
+        try
+        {
+            auto& server = dynamic_cast<raft::Server&>(process);
+            server.on_repl_speed(*this);
+        }
+        catch (const std::bad_cast&)
+        {
+            std::cerr << "Speed message could not be applied\n";
+        }
     }
 
     json RequestSpeedREPL::serialize_json() const
     {
         json serialization = ReplMsg::serialize_json();
-        serialization["target_process"] = target_process;
         serialization["speed"] = speed;
 
         return serialization;
     }
 
-    void RequestSpeedREPL::apply(Server& server)
+    ServerSpeed RequestSpeedREPL::get_speed() const
     {
-        server.change_speed(speed);
+        return speed;
     }
+
 } // namespace repl

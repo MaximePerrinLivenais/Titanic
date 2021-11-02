@@ -1,9 +1,9 @@
 #include "repl-message.hh"
 
 #include "request-crash-repl.hh"
-#include "request-start-repl.hh"
 #include "request-speed-repl.hh"
 #include "request-send-repl.hh"
+#include "request-start-repl.hh"
 #include "request-recovery-repl.hh"
 
 // TODO remove header
@@ -15,12 +15,6 @@ namespace repl
         : Message(MSG_TYPE::REPL_MESSAGE)
         , repl_msg_type(repl_type)
     {}
-
-    void ReplMsg::apply_message(Server& server)
-    {
-        std::cout << "I apply a repl message\n";
-        this->apply(server);
-    }
 
     json ReplMsg::serialize_json() const
     {
@@ -36,7 +30,6 @@ namespace repl
         auto json_obj = json::parse(message);
         auto repl_msg_type = json_obj["repl_msg_type"].get<REPL_MSG_TYPE>();
 
-        // TODO construct right object here
         switch (repl_msg_type)
         {
         case SPEED:
@@ -51,7 +44,8 @@ namespace repl
             return std::make_shared<RequestRecoveryREPL>(json_obj);
         }
 
-        throw std::invalid_argument("Not corresponding to existing REPL message");
+        throw std::invalid_argument(
+            "Not corresponding to existing REPL message");
     }
 
     REPL_MSG_TYPE ReplMsg::get_repl_msg_type() const

@@ -5,3 +5,5 @@ hello
 titanic
 compile_flags.txt
 hostfile
+client_commands
+server_logs

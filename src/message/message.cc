@@ -2,8 +2,8 @@
 
 #include <iostream>
 
+#include "client/client-message.hh"
 #include "repl/repl-message.hh"
-#include "client/client.hh"
 #include "rpc/rpc.hh"
 
 namespace message
@@ -23,7 +23,7 @@ namespace message
 
         serialization["msg_type"] = msg_type;
 
-        return serialization.dump(4);
+        return serialization.dump();
     }
 
     shared_msg Message::deserialize(const std::string& message)
@@ -34,8 +34,6 @@ namespace message
         switch (msg_type)
         {
         case RPC_MESSAGE:
-            // TODO Not the best thing to do since we are deserializing two
-            // times Maybe give the object `json` to deserialize.
             return rpc::RemoteProcedureCall::deserialize(message);
         case REPL_MESSAGE:
             return repl::ReplMsg::deserialize(message);

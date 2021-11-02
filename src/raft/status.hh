@@ -1,8 +1,11 @@
 #pragma once
 
-enum ServerStatus
+namespace raft
 {
-    FOLLOWER,
-    LEADER,
-    CANDIDATE
-};
+    enum ServerStatus
+    {
+        FOLLOWER,
+        LEADER,
+        CANDIDATE
+    };
+}

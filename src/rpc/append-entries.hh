@@ -16,16 +16,15 @@ namespace rpc
                                   const std::vector<LogEntry> entries,
                                   const unsigned int leader_commit_index);
 
-        explicit AppendEntriesRPC(const json &json_obj);
+        explicit AppendEntriesRPC(const json& json_obj);
+
+        void apply(raft::Server& server) final;
 
         unsigned int get_leader_id() const;
         int get_prev_log_index() const;
         int get_prev_log_term() const;
         const std::vector<LogEntry>& get_entries() const;
         int get_leader_commit_index() const;
-
-
-        void apply(Server& server);
 
     private:
         json serialize_json() const override;
@@ -36,6 +35,5 @@ namespace rpc
 
         const std::vector<LogEntry> entries;
         const int leader_commit_index;
-
     };
 } // namespace rpc

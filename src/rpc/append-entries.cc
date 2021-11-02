@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-#include "exception/follower_exception.hh"
 #include "raft/server.hh"
 
 namespace rpc
@@ -29,6 +28,11 @@ namespace rpc
 
     {}
 
+    void AppendEntriesRPC::apply(raft::Server& server)
+    {
+        server.on_append_entries_rpc(*this);
+    }
+
     json AppendEntriesRPC::serialize_json() const
     {
         json serialization = RemoteProcedureCall::serialize_json();
@@ -39,9 +43,6 @@ namespace rpc
         serialization["leader_commit_index"] = leader_commit_index;
 
         serialization["entries"] = entries;
-
-        // std::cout << "ENTRIES => " << serialization["entries"].dump(4)
-        //          << std::endl;
 
         return serialization;
     }
@@ -69,10 +70,5 @@ namespace rpc
     int AppendEntriesRPC::get_leader_commit_index() const
     {
         return leader_commit_index;
-    }
-
-    void AppendEntriesRPC::apply(Server& server)
-    {
-        server.on_append_entries_rpc(*this);
     }
 } // namespace rpc
